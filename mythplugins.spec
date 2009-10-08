@@ -1,30 +1,14 @@
 
 %define name    mythplugins
-%define version 0.21
-%define fixes 20323
-%define rel 1
+%define version 0.22
+%define fixes 22301
+%define rel 0.1
 
-%define required_myth 0.21
+%define required_myth 0.22
 
 %define release %mkrel %fixes.%rel
 
-# backportability
-%define _localstatedir	%{_var}
-%define _varlibdir	%{_localstatedir}/lib
-
-# segfaults mythphone on start
-%define build_festival		0
-%define build_firewire		1
 %define build_plf		0
-
-%ifarch x86_64
-# libFestival.a is non-PIC, should probably be fixed
-%define build_festival 0
-%endif
-
-%if %mdkversion <= 1020
-%define build_firewire          0
-%endif
 
 %bcond_with plf
 %if %with plf
@@ -32,30 +16,20 @@
 %define build_plf		1
 %endif
 
-%if %mdkversion > 200600
 BuildRequires:	mesagl-devel
-%else
-BuildRequires:	Mesa-devel
-%endif
 BuildRequires:	libmyth-devel >= %{required_myth}
 BuildRequires:	fftw-devel
 BuildRequires:	SDL-devel
 BuildRequires:	libdvdread-devel
 BuildRequires:	libexif-devel
-BuildRequires:	mad-devel
 BuildRequires:	id3tag-devel
 BuildRequires:	libvorbis-devel
 BuildRequires:	libflac-devel
 BuildRequires:	libcdaudio-devel
 BuildRequires:	libcdda-devel
 BuildRequires:	tiff-devel
-#BuildRequires:	kdelibs-devel
 BuildRequires:	mysql-devel
 BuildRequires:	taglib-devel
-%if %build_festival
-BuildRequires:	festival-devel
-BuildRequires:  speech_tools-devel
-%endif
 %if %build_plf
 BuildRequires:	lame-devel
 BuildRequires:	libfaad2-devel
@@ -70,7 +44,7 @@ URL: 		http://www.mythtv.org/
 License: 	GPL
 Group: 		Video
 Source0:	%{name}-%{version}-%{fixes}.tar.bz2
-Patch1:		mythplugins-0.21-nolame.patch
+Patch1:		mythplugins-0.22-nolame.patch
 
 BuildRoot: 	%{_tmppath}/%{name}-root
 
@@ -82,7 +56,6 @@ This package is in PLF because it contains software that supports
 codecs that may be covered by software patents.
 %endif
 
-%if 0
 %package -n mythtv-plugin-browser
 Summary:	Full web browser for MythTV
 URL: 		http://www.mythtv.org/
@@ -92,18 +65,6 @@ Requires:	mythtv-frontend >= %{required_myth}
 
 %description -n mythtv-plugin-browser
 MythBrowser is a full web browser for MythTV.
-%endif
-
-%package -n mythtv-plugin-controls
-Summary:	MythTV keybindings editor
-URL:		http://www.mythtv.org/
-Group:		Video
-Obsoletes:	mythcontrols < 0.20a-7
-Requires:	mythtv-frontend >= %{required_myth}
-
-%description -n mythtv-plugin-controls
-This plugin allows you to reconfigure your keybindings on the frontend without
-having to use MythWeb or edit tables by hand.
 
 %package -n mythtv-plugin-flix
 Summary:	NetFlix for MythTV
@@ -162,21 +123,6 @@ Obsoletes:	mythnews < 0.20a-7
 
 %description -n mythtv-plugin-news
 An RSS News feed plugin for MythTV.
-
-%package -n mythtv-plugin-phone
-Summary: 	Phone and videophone capability on Mythtv using the standard SIP protocol
-Group: 		Video
-Requires:	mythtv-frontend >= %{required_myth}
-Obsoletes:	mythphone < 0.20a-7
-%if %build_festival
-Requires:	festival speech_tools
-%endif
-
-%description -n mythtv-plugin-phone
-Mythphone is a phone and videophone capability on MYTH using
-the standard SIP protocol.  It is compatible with Microsoft XP Messenger (see
-caveat below) and with SIP Service Providers such as Free World Dialup (
-fwd.pulver.com).
 
 %package -n mythtv-plugin-weather
 Summary: 	MythTV module that displays a weather forecast
@@ -263,33 +209,19 @@ and the mythfrontend UI plugin.
 %patch1 -p0 -b .lame
 
 # Fix /mnt/store -> /var/lib/mythmusic
-perl -pi -e's|/mnt/store/music|%{_varlibdir}/mythmusic|' mythmusic/mythmusic/globalsettings.cpp
+perl -pi -e's|/mnt/store/music|%{_localstatedir}/lib/mythmusic|' mythmusic/mythmusic/globalsettings.cpp
 # Fix /mnt/store -> /var/lib/mythvideo
-perl -pi -e's|/share/Movies/dvd|%{_varlibdir}/mythvideo|' mythvideo/mythvideo/globalsettings.cpp
+perl -pi -e's|/share/Movies/dvd|%{_localstatedir}/lib/mythvideo|' mythvideo/mythvideo/globalsettings.cpp
 
 perl -pi -e's|{PREFIX}/lib$|{PREFIX}/%{_lib}|' settings.pro
 
 %build
-export QTDIR=%{_prefix}/lib/qt3
-export QTLIB=$QTDIR/%{_lib}
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:%{_libdir}
-
-%configure --enable-all --libdir-name=%{_lib} --disable-mythbrowser \
+%configure --enable-all --libdir-name=%{_lib} \
 %if %build_plf
-	--enable-aac --enable-libmp3lame \
+	--enable-aac --enable-libmp3lame
 %else
-	--disable-aac --disable-libmp3lame \
+	--disable-aac --disable-libmp3lame
 %endif
-%if %build_festival
-	--enable-festival
-%else
-	--disable-festival
-%endif
-
-#mythphone
-cat >> settings.pro << EOF
-INCLUDEPATH += %{_includedir}/EST
-EOF
 
 %make
 
@@ -301,17 +233,17 @@ INSTALL_ROOT=%{buildroot}; export INSTALL_ROOT
 %makeinstall
 
 #mythgallery
-mkdir -p %{buildroot}%{_varlibdir}/pictures
+mkdir -p %{buildroot}%{_localstatedir}/lib/pictures
 #mythmusic
-mkdir -p %{buildroot}%{_varlibdir}/mythmusic
+mkdir -p %{buildroot}%{_localstatedir}/lib/mythmusic
 #mythvideo
-mkdir -p %{buildroot}%{_varlibdir}/mythvideo
+mkdir -p %{buildroot}%{_localstatedir}/lib/mythvideo
 
 install -d -m755 %{buildroot}%{_var}/www/mythweb
 install -m644 mythweb/*.php %{buildroot}%{_var}/www/mythweb
 install -m755 mythweb/*.pl %{buildroot}%{_var}/www/mythweb
 
-for dir in includes js modules objects skins ; do
+for dir in classes includes js modules skins ; do
   cp -r mythweb/$dir %{buildroot}%{_var}/www/mythweb
 done
 
@@ -336,6 +268,8 @@ EOF
 install -d -m755 %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d
 install -m644 mythweb/mythweb.conf %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d
 
+mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,flix,gallery,game,movies,music,news,weather,video,zoneminder}
+
 %clean
 rm -rf %{buildroot}
 
@@ -345,15 +279,13 @@ rm -rf %{buildroot}
 %postun -n mythtv-mythweb
 %_postun_webapp
 
-%if 0
 %files -n mythtv-plugin-browser
 %defattr(-,root,root,-)
 %doc mythbrowser/README mythbrowser/COPYING mythbrowser/AUTHORS
-%{_bindir}/mythbrowser
-%{_libdir}/mythtv/plugins/libmythbookmarkmanager.so
-%{_datadir}/mythtv/themes/default/webpage.png
+%{_libdir}/mythtv/plugins/libmythbrowser.so
 %{_datadir}/mythtv/i18n/mythbrowser_*.qm
-%endif
+%{_datadir}/mythtv/themes/default*/browser-ui.xml
+%{_datadir}/mythtv/themes/default*/mb_*.png
 
 %files -n mythtv-plugin-flix
 %defattr(-,root,root,-)
@@ -372,7 +304,7 @@ rm -rf %{buildroot}
 %{_libdir}/mythtv/plugins/libmythgallery.so
 %{_datadir}/mythtv/i18n/mythgallery_*.qm
 %{_datadir}/mythtv/themes/default*/gallery*
-%{_varlibdir}/pictures
+%{_localstatedir}/lib/pictures
 
 %files -n mythtv-plugin-game
 %defattr(-,root,root,-)
@@ -388,8 +320,8 @@ rm -rf %{buildroot}
 %{_bindir}/ignyte
 %{_libdir}/mythtv/plugins/libmythmovies.so
 %{_datadir}/mythtv/themes/default*/movies-ui.xml
-%{_datadir}/mythtv/themes/default*/mv-*.png
 %{_datadir}/mythtv/themes/default*/mv_*.png
+%{_datadir}/mythtv/i18n/mythmovies_*.qm
 
 %files -n mythtv-plugin-music
 %defattr(-,root,root,-)
@@ -397,10 +329,11 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/music_settings.xml
 %{_datadir}/mythtv/musicmenu.xml
 %{_libdir}/mythtv/plugins/libmythmusic.so
-%{_varlibdir}/mythmusic
+%{_localstatedir}/lib/mythmusic
 %{_datadir}/mythtv/i18n/mythmusic_*.qm
 %{_datadir}/mythtv/themes/default/ff_button*.png
 %{_datadir}/mythtv/themes/default*/mm_*.png
+%{_datadir}/mythtv/themes/default*/mm-*.png
 %{_datadir}/mythtv/themes/default/music-*.png
 %{_datadir}/mythtv/themes/default*/music-ui.xml
 %{_datadir}/mythtv/themes/default/next_button*.png
@@ -412,6 +345,7 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default/stop_button*.png
 %{_datadir}/mythtv/themes/default/track_info_background.png
 %{_datadir}/mythtv/themes/default/miniplayer_background.png
+%{_datadir}/mythtv/themes/default-wide/music-sel-bg.png
 
 %files -n mythtv-plugin-news
 %defattr(-,root,root,-)
@@ -422,16 +356,8 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default*/news*
 %{_datadir}/mythtv/themes/default/enclosures.png
 %{_datadir}/mythtv/themes/default/need-download.png
+%{_datadir}/mythtv/themes/default/podcast.png
 
-
-%files -n mythtv-plugin-phone
-%defattr(-,root,root,-)
-%doc mythphone/AUTHORS mythphone/COPYING mythphone/README mythphone/TODO
-%{_libdir}/mythtv/plugins/libmythphone.so
-%{_datadir}/mythtv/themes/default*/mp_*
-%{_datadir}/mythtv/themes/default*/phone*
-%{_datadir}/mythtv/themes/default/webcam*
-%{_datadir}/mythtv/i18n/mythphone_*.qm
 
 %files -n mythtv-plugin-weather
 %defattr(-,root,root,-)
@@ -478,7 +404,7 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default/md_*.png
 %{_datadir}/mythtv/themes/default*/video*.xml
 %{_datadir}/mythtv/themes/default*/dvd*.xml
-%{_varlibdir}/mythvideo
+%{_localstatedir}/lib/mythvideo
 
 %files -n mythtv-plugin-zoneminder
 %defattr(-,root,root,-)
@@ -488,14 +414,7 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/zonemindermenu.xml
 %{_datadir}/mythtv/themes/default*/zoneminder*.xml
 %{_datadir}/mythtv/themes/default*/mz_*.png
-
-%files -n mythtv-plugin-controls
-%defattr(-,root,root)
-%{_libdir}/mythtv/plugins/libmythcontrols.so
-%{_datadir}/mythtv/themes/default/controls-ui.xml
-%{_datadir}/mythtv/themes/default/kb-button-off.png
-%{_datadir}/mythtv/themes/default/kb-button-on.png
-%{_datadir}/mythtv/i18n/mythcontrols_*.qm
+%{_datadir}/mythtv/i18n/mythzoneminder_*.qm
 
 %files -n mythtv-plugin-archive
 %defattr(-,root,root)
@@ -507,4 +426,7 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default/mytharchive-ui.xml
 %{_datadir}/mythtv/themes/default/mythburn-ui.xml
 %{_datadir}/mythtv/themes/default/mythnative-ui.xml
+%{_datadir}/mythtv/themes/default-wide/mytharchive-ui.xml
+%{_datadir}/mythtv/themes/default-wide/mythburn-ui.xml
+%{_datadir}/mythtv/themes/default-wide/mythnative-ui.xml
 %{_datadir}/mythtv/i18n/mytharchive_*.qm
