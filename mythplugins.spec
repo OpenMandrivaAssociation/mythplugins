@@ -1,0 +1,510 @@
+
+%define name    mythplugins
+%define version 0.21
+%define fixes 20323
+%define rel 1
+
+%define required_myth 0.21
+
+%define release %mkrel %fixes.%rel
+
+# backportability
+%define _localstatedir	%{_var}
+%define _varlibdir	%{_localstatedir}/lib
+
+# segfaults mythphone on start
+%define build_festival		0
+%define build_firewire		1
+%define build_plf		0
+
+%ifarch x86_64
+# libFestival.a is non-PIC, should probably be fixed
+%define build_festival 0
+%endif
+
+%if %mdkversion <= 1020
+%define build_firewire          0
+%endif
+
+%bcond_with plf
+%if %with plf
+%define distsuffix		plf
+%define build_plf		1
+%endif
+
+%if %mdkversion > 200600
+BuildRequires:	mesagl-devel
+%else
+BuildRequires:	Mesa-devel
+%endif
+BuildRequires:	libmyth-devel >= %{required_myth}
+BuildRequires:	fftw-devel
+BuildRequires:	SDL-devel
+BuildRequires:	libdvdread-devel
+BuildRequires:	libexif-devel
+BuildRequires:	mad-devel
+BuildRequires:	id3tag-devel
+BuildRequires:	libvorbis-devel
+BuildRequires:	libflac-devel
+BuildRequires:	libcdaudio-devel
+BuildRequires:	libcdda-devel
+BuildRequires:	tiff-devel
+#BuildRequires:	kdelibs-devel
+BuildRequires:	mysql-devel
+BuildRequires:	taglib-devel
+%if %build_festival
+BuildRequires:	festival-devel
+BuildRequires:  speech_tools-devel
+%endif
+%if %build_plf
+BuildRequires:	lame-devel
+BuildRequires:	libfaad2-devel
+BuildRequires:	libfaad2-static-devel
+%endif
+
+Summary: 	Official MythTV plugins
+Name: 		%{name}
+Version: 	%{version}
+Release: 	%{release}
+URL: 		http://www.mythtv.org/
+License: 	GPL
+Group: 		Video
+Source0:	%{name}-%{version}-%{fixes}.tar.bz2
+Patch1:		mythplugins-0.21-nolame.patch
+
+BuildRoot: 	%{_tmppath}/%{name}-root
+
+%description
+Mythplugins for MythTV.
+
+%if %with plf
+This package is in PLF because it contains software that supports
+codecs that may be covered by software patents.
+%endif
+
+%if 0
+%package -n mythtv-plugin-browser
+Summary:	Full web browser for MythTV
+URL: 		http://www.mythtv.org/
+Group:		Video
+Obsoletes:	mythbrowser < 0.20a-7
+Requires:	mythtv-frontend >= %{required_myth}
+
+%description -n mythtv-plugin-browser
+MythBrowser is a full web browser for MythTV.
+%endif
+
+%package -n mythtv-plugin-controls
+Summary:	MythTV keybindings editor
+URL:		http://www.mythtv.org/
+Group:		Video
+Obsoletes:	mythcontrols < 0.20a-7
+Requires:	mythtv-frontend >= %{required_myth}
+
+%description -n mythtv-plugin-controls
+This plugin allows you to reconfigure your keybindings on the frontend without
+having to use MythWeb or edit tables by hand.
+
+%package -n mythtv-plugin-flix
+Summary:	NetFlix for MythTV
+Group:		Video
+Requires:	mythtv-frontend >= %{required_myth}
+Obsoletes:	mythflix < 0.20a-7
+%description -n mythtv-plugin-flix
+NetFlix for MythTV.
+
+%package -n mythtv-plugin-gallery
+Summary: 	Gallery/slideshow module for MythTV
+Group: 		Video
+Requires:	mythtv-frontend >= %{required_myth}
+Obsoletes:	mythgallery < 0.20a-7
+
+%description -n mythtv-plugin-gallery
+A gallery/slideshow module for MythTV.
+
+%package -n mythtv-plugin-game
+Summary: 	Game frontend for MythTV
+Group: 		Video
+Requires:	mythtv-frontend >= %{required_myth}
+Obsoletes:	mythgame < 0.20a-7
+
+%description -n mythtv-plugin-game
+A game frontend for MythTV.
+
+%package -n mythtv-plugin-music
+Summary: 	The music player add-on module for MythTV
+Group: 		Video
+#Requires:	cdparanoia
+Requires:	mythtv-frontend >= %{required_myth}
+Obsoletes:	mythmusic < 0.20a-7
+
+%description -n mythtv-plugin-music
+The music player add-on module for MythTV.
+
+%if %with plf
+This package is in PLF because it contains software that supports
+codecs that may be covered by software patents.
+%endif
+
+%package -n mythtv-plugin-movies
+Summary:  Movie time plugin for MythTV
+Group:    Video
+Requires: mythtv-frontend >= %{required_myth}
+
+%description -n mythtv-plugin-movies
+A movie time plugin for MythTV.
+
+%package -n mythtv-plugin-news
+Summary: 	RSS News feed plugin for MythTV
+Group: 		Video
+Requires:	mythtv-frontend >= %{required_myth}
+Obsoletes:	mythnews < 0.20a-7
+
+%description -n mythtv-plugin-news
+An RSS News feed plugin for MythTV.
+
+%package -n mythtv-plugin-phone
+Summary: 	Phone and videophone capability on Mythtv using the standard SIP protocol
+Group: 		Video
+Requires:	mythtv-frontend >= %{required_myth}
+Obsoletes:	mythphone < 0.20a-7
+%if %build_festival
+Requires:	festival speech_tools
+%endif
+
+%description -n mythtv-plugin-phone
+Mythphone is a phone and videophone capability on MYTH using
+the standard SIP protocol.  It is compatible with Microsoft XP Messenger (see
+caveat below) and with SIP Service Providers such as Free World Dialup (
+fwd.pulver.com).
+
+%package -n mythtv-plugin-weather
+Summary: 	MythTV module that displays a weather forecast
+Group: 		Video
+Requires:	mythtv-frontend >= %{required_myth}
+Obsoletes:	mythweather < 0.20a-7
+
+%description -n mythtv-plugin-weather
+A MythTV module that displays a weather forcast.
+
+%package -n mythtv-mythweb
+Summary: 	The web interface to MythTV
+Group: 		Video
+Requires:	mythtv-backend >= %{required_myth}
+Requires: 	mod_php >= 2.0.54
+Requires:	php-mysql
+BuildRequires:	apache-base >= 2.0.54-5mdk
+Obsoletes:	mythweb < 0.20a-7
+# Requires autofinder is confused, requires nonexistent packages
+%define _requires_exceptions pear*
+
+%description -n mythtv-mythweb
+The web interface to MythTV.
+
+%package -n mythtv-plugin-video
+Summary: 	Generic video/DVD player frontend module for MythTV
+Group: 		Video
+Requires:	mythtv-frontend >= %{required_myth}
+Requires:	mplayer
+%if %build_plf
+Requires:      transcode
+Requires:      %mklibname dvdcss 2
+%endif
+Obsoletes:	mythvideo < 0.20a-7
+Provides:  mythtv-plugin-dvd = %{version}-%{release}
+Obsoletes: mythtv-plugin-dvd < %{version}-%{release}
+
+
+%description -n mythtv-plugin-video
+A generic video and DVD player frontend module for MythTV.
+
+%package -n mythtv-plugin-zoneminder
+Summary:  Security camera plugin for MythTV
+Group:    Video
+Requires: mythtv-frontend >= %{required_myth}
+
+%description -n mythtv-plugin-zoneminder
+A security camera plugin for MythTV.
+
+%package -n mythtv-plugin-archive
+Summary: 	Creates DVDs from your recorded shows
+Group: 		Video
+Requires:	dvd+rw-tools
+Requires:	dvdauthor
+Requires:	ffmpeg
+Requires:	mjpegtools
+Requires:	python-imaging
+Requires:	python-mysql
+Requires:	mythtv-frontend >= %{required_myth}
+%if %build_plf
+Requires:	transcode
+%endif
+%if %mdkversion >= 200710
+Requires:	cdrkit-genisoimage
+%else
+Requires:	mkisofs
+%endif
+Obsoletes:	mytharchive < 0.20a-7
+
+%description -n mythtv-plugin-archive
+MythArchive is a plugin for MythTV that lets you create DVDs
+from your recorded shows, MythVideo files and any video files
+available on your system. It can also archive recordings in a
+proprietary format that archives not only the file but also all the
+associated metadata like title, description and cut list information
+which will mean you can create backups of myth recordings which can
+later be restored or it will also allow you to move recordings
+between myth systems without losing any of the metadata. It is a
+complete rewrite of the old MythBurn bash scripts, now using python,
+and the mythfrontend UI plugin.
+
+%prep
+%setup -q
+%patch1 -p0 -b .lame
+
+# Fix /mnt/store -> /var/lib/mythmusic
+perl -pi -e's|/mnt/store/music|%{_varlibdir}/mythmusic|' mythmusic/mythmusic/globalsettings.cpp
+# Fix /mnt/store -> /var/lib/mythvideo
+perl -pi -e's|/share/Movies/dvd|%{_varlibdir}/mythvideo|' mythvideo/mythvideo/globalsettings.cpp
+
+perl -pi -e's|{PREFIX}/lib$|{PREFIX}/%{_lib}|' settings.pro
+
+%build
+export QTDIR=%{_prefix}/lib/qt3
+export QTLIB=$QTDIR/%{_lib}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:%{_libdir}
+
+%configure --enable-all --libdir-name=%{_lib} --disable-mythbrowser \
+%if %build_plf
+	--enable-aac --enable-libmp3lame \
+%else
+	--disable-aac --disable-libmp3lame \
+%endif
+%if %build_festival
+	--enable-festival
+%else
+	--disable-festival
+%endif
+
+#mythphone
+cat >> settings.pro << EOF
+INCLUDEPATH += %{_includedir}/EST
+EOF
+
+%make
+
+%install
+
+rm -rf %{buildroot}
+
+INSTALL_ROOT=%{buildroot}; export INSTALL_ROOT
+%makeinstall
+
+#mythgallery
+mkdir -p %{buildroot}%{_varlibdir}/pictures
+#mythmusic
+mkdir -p %{buildroot}%{_varlibdir}/mythmusic
+#mythvideo
+mkdir -p %{buildroot}%{_varlibdir}/mythvideo
+
+install -d -m755 %{buildroot}%{_var}/www/mythweb
+install -m644 mythweb/*.php %{buildroot}%{_var}/www/mythweb
+install -m755 mythweb/*.pl %{buildroot}%{_var}/www/mythweb
+
+for dir in includes js modules objects skins ; do
+  cp -r mythweb/$dir %{buildroot}%{_var}/www/mythweb
+done
+
+install -d -m755 %{buildroot}%{_localstatedir}/lib/mythweb/data
+ln -s %{_localstatedir}/lib/mythweb/data %{buildroot}%{_var}/www/mythweb/data
+
+# Create a default configuration for mythweb
+cp mythweb/mythweb.conf.apache mythweb/mythweb.conf
+perl -pi -e's|<Directory "/var/www/html" >|<Directory "%{_var}/www/mythweb" >|' mythweb/mythweb.conf
+perl -pi -e's|#    RewriteBase    /mythweb|    RewriteBase    /mythweb|' mythweb/mythweb.conf
+cat >> mythweb/mythweb.conf <<EOF
+Alias /mythweb %{_var}/www/mythweb
+
+<Directory %{_var}/www/mythweb>
+    Order Deny,Allow
+    Deny from All
+    Allow from 127.0.0.1
+    ErrorDocument 403 "Access denied. Please edit %{_sysconfdir}/httpd/conf/webapps.d/mythweb.conf to give access to this resource."
+</Directory>
+EOF
+
+install -d -m755 %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d
+install -m644 mythweb/mythweb.conf %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d
+
+%clean
+rm -rf %{buildroot}
+
+%post -n mythtv-mythweb
+%_post_webapp
+
+%postun -n mythtv-mythweb
+%_postun_webapp
+
+%if 0
+%files -n mythtv-plugin-browser
+%defattr(-,root,root,-)
+%doc mythbrowser/README mythbrowser/COPYING mythbrowser/AUTHORS
+%{_bindir}/mythbrowser
+%{_libdir}/mythtv/plugins/libmythbookmarkmanager.so
+%{_datadir}/mythtv/themes/default/webpage.png
+%{_datadir}/mythtv/i18n/mythbrowser_*.qm
+%endif
+
+%files -n mythtv-plugin-flix
+%defattr(-,root,root,-)
+%doc mythflix/README mythflix/COPYING mythflix/ChangeLog mythflix/AUTHORS
+%{_libdir}/mythtv/plugins/libmythflix.so
+%{_datadir}/mythtv/i18n/mythflix_*.qm
+%{_datadir}/mythtv/i18n/mythflix_*.ts
+%{_datadir}/mythtv/mythflix
+%{_datadir}/mythtv/netflix_menu.xml
+%{_datadir}/mythtv/themes/default*/netflix*.xml
+%{_datadir}/mythtv/themes/default*/*flix*.png
+
+%files -n mythtv-plugin-gallery
+%defattr(-,root,root,-)
+%doc mythgallery/README*
+%{_libdir}/mythtv/plugins/libmythgallery.so
+%{_datadir}/mythtv/i18n/mythgallery_*.qm
+%{_datadir}/mythtv/themes/default*/gallery*
+%{_varlibdir}/pictures
+
+%files -n mythtv-plugin-game
+%defattr(-,root,root,-)
+%doc mythgame/romdb*
+%{_libdir}/mythtv/plugins/libmythgame.so
+%{_datadir}/mythtv/i18n/mythgame_*.qm
+%{_datadir}/mythtv/game_settings.xml
+%{_datadir}/mythtv/themes/default*/game*
+
+%files -n mythtv-plugin-movies
+%defattr(-,root,root,-)
+%doc mythmovies/COPYING mythmovies/README
+%{_bindir}/ignyte
+%{_libdir}/mythtv/plugins/libmythmovies.so
+%{_datadir}/mythtv/themes/default*/movies-ui.xml
+%{_datadir}/mythtv/themes/default*/mv-*.png
+%{_datadir}/mythtv/themes/default*/mv_*.png
+
+%files -n mythtv-plugin-music
+%defattr(-,root,root,-)
+%doc mythmusic/AUTHORS mythmusic/COPYING mythmusic/README* mythmusic/musicdb
+%{_datadir}/mythtv/music_settings.xml
+%{_datadir}/mythtv/musicmenu.xml
+%{_libdir}/mythtv/plugins/libmythmusic.so
+%{_varlibdir}/mythmusic
+%{_datadir}/mythtv/i18n/mythmusic_*.qm
+%{_datadir}/mythtv/themes/default/ff_button*.png
+%{_datadir}/mythtv/themes/default*/mm_*.png
+%{_datadir}/mythtv/themes/default/music-*.png
+%{_datadir}/mythtv/themes/default*/music-ui.xml
+%{_datadir}/mythtv/themes/default/next_button*.png
+%{_datadir}/mythtv/themes/default/pause_button*.png
+%{_datadir}/mythtv/themes/default/play_button*.png
+%{_datadir}/mythtv/themes/default/prev_button*.png
+%{_datadir}/mythtv/themes/default/rew_button*.png
+%{_datadir}/mythtv/themes/default/selectionbar.png
+%{_datadir}/mythtv/themes/default/stop_button*.png
+%{_datadir}/mythtv/themes/default/track_info_background.png
+%{_datadir}/mythtv/themes/default/miniplayer_background.png
+
+%files -n mythtv-plugin-news
+%defattr(-,root,root,-)
+%doc mythnews/AUTHORS mythnews/COPYING mythnews/ChangeLog mythnews/README*
+%{_libdir}/mythtv/plugins/libmythnews.so
+%{_datadir}/mythtv/i18n/mythnews_*.qm
+%{_datadir}/mythtv/mythnews
+%{_datadir}/mythtv/themes/default*/news*
+%{_datadir}/mythtv/themes/default/enclosures.png
+%{_datadir}/mythtv/themes/default/need-download.png
+
+
+%files -n mythtv-plugin-phone
+%defattr(-,root,root,-)
+%doc mythphone/AUTHORS mythphone/COPYING mythphone/README mythphone/TODO
+%{_libdir}/mythtv/plugins/libmythphone.so
+%{_datadir}/mythtv/themes/default*/mp_*
+%{_datadir}/mythtv/themes/default*/phone*
+%{_datadir}/mythtv/themes/default/webcam*
+%{_datadir}/mythtv/i18n/mythphone_*.qm
+
+%files -n mythtv-plugin-weather
+%defattr(-,root,root,-)
+%doc mythweather/AUTHORS mythweather/COPYING mythweather/README*
+%{_libdir}/mythtv/plugins/libmythweather.so
+%{_datadir}/mythtv/i18n/mythweather_*.qm
+%{_datadir}/mythtv/mythweather
+%{_datadir}/mythtv/themes/default/cloudy.png
+%{_datadir}/mythtv/themes/default/fair.png
+%{_datadir}/mythtv/themes/default/flurries.png
+%{_datadir}/mythtv/themes/default/fog.png
+%{_datadir}/mythtv/themes/default/logo.png
+%{_datadir}/mythtv/themes/default/lshowers.png
+%{_datadir}/mythtv/themes/default/mcloudy.png
+%{_datadir}/mythtv/themes/default/pcloudy.png
+%{_datadir}/mythtv/themes/default/rainsnow.png
+%{_datadir}/mythtv/themes/default/showers.png
+%{_datadir}/mythtv/themes/default/snowshow.png
+%{_datadir}/mythtv/themes/default/sunny.png
+%{_datadir}/mythtv/themes/default/thunshowers.png
+%{_datadir}/mythtv/themes/default/unknown.png
+%{_datadir}/mythtv/themes/default*/mw*.png
+%{_datadir}/mythtv/themes/default*/weather-ui.xml
+%{_datadir}/mythtv/weather_settings.xml
+
+%files -n mythtv-mythweb
+%defattr(-,root,root,-)
+%doc mythweb/README* mythweb/LICENSE mythweb/INSTALL mythweb/mythweb.conf.*
+%{_var}/www/mythweb
+%dir %{_localstatedir}/lib/mythweb
+%attr(-,apache,apache) %{_localstatedir}/lib/mythweb/data
+%config(noreplace) %{_sysconfdir}/httpd/conf/webapps.d/mythweb.conf
+
+%files -n mythtv-plugin-video
+%defattr(-,root,root,-)
+%doc mythvideo/README*
+%{_bindir}/mtd
+%{_libdir}/mythtv/plugins/libmythvideo.so
+%{_datadir}/mythtv/video_settings.xml
+%{_datadir}/mythtv/videomenu.xml
+%{_datadir}/mythtv/i18n/mythvideo_*.qm
+%{_datadir}/mythtv/mythvideo/scripts
+%{_datadir}/mythtv/themes/default/mv*.png
+%{_datadir}/mythtv/themes/default/md_*.png
+%{_datadir}/mythtv/themes/default*/video*.xml
+%{_datadir}/mythtv/themes/default*/dvd*.xml
+%{_varlibdir}/mythvideo
+
+%files -n mythtv-plugin-zoneminder
+%defattr(-,root,root,-)
+%doc mythzoneminder/README mythzoneminder/COPYING mythzoneminder/AUTHORS
+%{_bindir}/mythzmserver
+%{_libdir}/mythtv/plugins/libmythzoneminder.so
+%{_datadir}/mythtv/zonemindermenu.xml
+%{_datadir}/mythtv/themes/default*/zoneminder*.xml
+%{_datadir}/mythtv/themes/default*/mz_*.png
+
+%files -n mythtv-plugin-controls
+%defattr(-,root,root)
+%{_libdir}/mythtv/plugins/libmythcontrols.so
+%{_datadir}/mythtv/themes/default/controls-ui.xml
+%{_datadir}/mythtv/themes/default/kb-button-off.png
+%{_datadir}/mythtv/themes/default/kb-button-on.png
+%{_datadir}/mythtv/i18n/mythcontrols_*.qm
+
+%files -n mythtv-plugin-archive
+%defattr(-,root,root)
+%{_bindir}/mytharchivehelper
+%{_libdir}/mythtv/plugins/libmytharchive.so
+%{_datadir}/mythtv/archive*.xml
+%{_datadir}/mythtv/mytharchive
+%{_datadir}/mythtv/themes/default/ma_*.png
+%{_datadir}/mythtv/themes/default/mytharchive-ui.xml
+%{_datadir}/mythtv/themes/default/mythburn-ui.xml
+%{_datadir}/mythtv/themes/default/mythnative-ui.xml
+%{_datadir}/mythtv/i18n/mytharchive_*.qm
