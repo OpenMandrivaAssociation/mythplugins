@@ -1,8 +1,8 @@
 
 %define name    mythplugins
 %define version 0.22
-%define fixes 22490
-%define rel 0.1
+%define fixes 22807
+%define rel 1
 
 %define required_myth 0.22
 
