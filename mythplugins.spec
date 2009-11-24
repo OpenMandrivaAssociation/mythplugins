@@ -1,7 +1,7 @@
 
 %define name    mythplugins
 %define version 0.22
-%define fixes 22807
+%define fixes 22864
 %define rel 1
 
 %define required_myth 0.22
@@ -18,6 +18,7 @@
 
 BuildRequires:	mesagl-devel
 BuildRequires:	libmyth-devel >= %{required_myth}
+BuildRequires:	libvisual-devel
 BuildRequires:	fftw-devel
 BuildRequires:	SDL-devel
 BuildRequires:	libdvdread-devel
