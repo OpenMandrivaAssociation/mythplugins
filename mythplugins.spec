@@ -2,7 +2,7 @@
 %define name    mythplugins
 %define version 0.22
 %define fixes 22864
-%define rel 1
+%define rel 2
 
 %define required_myth 0.22
 
@@ -140,7 +140,10 @@ Group: 		Video
 Requires:	mythtv-backend >= %{required_myth}
 Requires: 	mod_php >= 2.0.54
 Requires:	php-mysql
-BuildRequires:	apache-base >= 2.0.54-5mdk
+%if %mdkversion < 201010
+Requires(post):   rpm-helper
+Requires(postun):   rpm-helper
+%endif
 Obsoletes:	mythweb < 0.20a-7
 # Requires autofinder is confused, requires nonexistent packages
 %define _requires_exceptions pear*
@@ -255,19 +258,16 @@ ln -s %{_localstatedir}/lib/mythweb/data %{buildroot}%{_var}/www/mythweb/data
 cp mythweb/mythweb.conf.apache mythweb/mythweb.conf
 perl -pi -e's|<Directory "/var/www/html" >|<Directory "%{_var}/www/mythweb" >|' mythweb/mythweb.conf
 perl -pi -e's|#    RewriteBase    /mythweb|    RewriteBase    /mythweb|' mythweb/mythweb.conf
-cat >> mythweb/mythweb.conf <<EOF
+
+install -d -m755 %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d
+cat > %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d/mythweb.conf <<EOF
 Alias /mythweb %{_var}/www/mythweb
 
 <Directory %{_var}/www/mythweb>
-    Order Deny,Allow
-    Deny from All
-    Allow from 127.0.0.1
-    ErrorDocument 403 "Access denied. Please edit %{_sysconfdir}/httpd/conf/webapps.d/mythweb.conf to give access to this resource."
+    Order allow,deny
+    Deny from all
 </Directory>
 EOF
-
-install -d -m755 %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d
-install -m644 mythweb/mythweb.conf %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d
 
 mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,flix,gallery,game,movies,music,news,weather,video,zoneminder}
 
@@ -275,10 +275,14 @@ mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,flix,gallery,game,movies,
 rm -rf %{buildroot}
 
 %post -n mythtv-mythweb
+%if %mdkversion < 201010
 %_post_webapp
+%endif
 
 %postun -n mythtv-mythweb
+%if %mdkversion < 201010
 %_postun_webapp
+%endif
 
 %files -n mythtv-plugin-browser
 %defattr(-,root,root,-)
