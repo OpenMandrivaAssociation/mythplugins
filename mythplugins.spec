@@ -1,7 +1,7 @@
 
 %define name    mythplugins
-%define version 0.22
-%define fixes 23469
+%define version 0.23
+%define fixes 24305
 %define rel 1
 
 %define required_myth 0.22
@@ -45,7 +45,7 @@ URL: 		http://www.mythtv.org/
 License: 	GPL
 Group: 		Video
 Source0:	%{name}-%{version}-%{fixes}.tar.bz2
-Patch1:		mythplugins-0.22-nolame.patch
+Patch1:		mythplugins-0.23-nolame.patch
 
 BuildRoot: 	%{_tmppath}/%{name}-root
 
@@ -66,14 +66,6 @@ Requires:	mythtv-frontend >= %{required_myth}
 
 %description -n mythtv-plugin-browser
 MythBrowser is a full web browser for MythTV.
-
-%package -n mythtv-plugin-flix
-Summary:	NetFlix for MythTV
-Group:		Video
-Requires:	mythtv-frontend >= %{required_myth}
-Obsoletes:	mythflix < 0.20a-7
-%description -n mythtv-plugin-flix
-NetFlix for MythTV.
 
 %package -n mythtv-plugin-gallery
 Summary: 	Gallery/slideshow module for MythTV
@@ -115,6 +107,14 @@ Requires: mythtv-frontend >= %{required_myth}
 
 %description -n mythtv-plugin-movies
 A movie time plugin for MythTV.
+
+%package -n mythtv-plugin-netvision
+Summary:  NetVision for MythTV
+Group:    Video
+Requires: mythtv-frontend >= %{required_myth}
+
+%description -n mythtv-plugin-netvision
+NetVision for MythTV. View popular media website content.
 
 %package -n mythtv-plugin-news
 Summary: 	RSS News feed plugin for MythTV
@@ -269,7 +269,7 @@ Alias /mythweb %{_var}/www/mythweb
 </Directory>
 EOF
 
-mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,flix,gallery,game,movies,music,news,weather,video,zoneminder}
+mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,gallery,game,movies,music,netvision,news,weather,video,zoneminder}
 
 %clean
 rm -rf %{buildroot}
@@ -291,17 +291,6 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/i18n/mythbrowser_*.qm
 %{_datadir}/mythtv/themes/default*/browser-ui.xml
 %{_datadir}/mythtv/themes/default*/mb_*.png
-
-%files -n mythtv-plugin-flix
-%defattr(-,root,root,-)
-%doc mythflix/README mythflix/COPYING mythflix/ChangeLog mythflix/AUTHORS
-%{_libdir}/mythtv/plugins/libmythflix.so
-%{_datadir}/mythtv/i18n/mythflix_*.qm
-%{_datadir}/mythtv/i18n/mythflix_*.ts
-%{_datadir}/mythtv/mythflix
-%{_datadir}/mythtv/netflix_menu.xml
-%{_datadir}/mythtv/themes/default*/netflix*.xml
-%{_datadir}/mythtv/themes/default*/*flix*.png
 
 %files -n mythtv-plugin-gallery
 %defattr(-,root,root,-)
@@ -351,6 +340,15 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default/track_info_background.png
 %{_datadir}/mythtv/themes/default/miniplayer_background.png
 %{_datadir}/mythtv/themes/default-wide/music-sel-bg.png
+
+%files -n mythtv-plugin-netvision
+%defattr(-,root,root,-)
+%doc mythnetvision/README mythnetvision/ChangeLog mythnetvision/AUTHORS
+%{_libdir}/mythtv/plugins/libmythnetvision.so
+%{_datadir}/mythtv/i18n/mythnetvision_*.qm
+%{_datadir}/mythtv/mythnetvision
+%{_datadir}/mythtv/netvisionmenu.xml
+%{_datadir}/mythtv/themes/default*/netvision*.xml
 
 %files -n mythtv-plugin-news
 %defattr(-,root,root,-)
