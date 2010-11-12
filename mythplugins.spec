@@ -1,10 +1,10 @@
 
 %define name    mythplugins
-%define version 0.23
-%define fixes 25065
+%define version 0.24
+%define fixes 27174
 %define rel 1
 
-%define required_myth 0.22
+%define required_myth 0.24
 
 %define release %mkrel %fixes.%rel
 
@@ -18,6 +18,7 @@
 
 BuildRequires:	mesagl-devel
 BuildRequires:	libmyth-devel >= %{required_myth}
+BuildRequires:  python-mythtv >= %{required_myth}
 BuildRequires:	libvisual-devel
 BuildRequires:	fftw-devel
 BuildRequires:	SDL-devel
@@ -31,6 +32,11 @@ BuildRequires:	libcdda-devel
 BuildRequires:	tiff-devel
 BuildRequires:	mysql-devel
 BuildRequires:	taglib-devel
+BuildRequires:  python-curl
+BuildRequires:  python-oauth
+BuildRequires:  perl-XML-XPath
+BuildRequires:  perl-Image-Size
+#BuildRequires:  perl-DateTime-Format-ISO8601
 %if %build_plf
 BuildRequires:	lame-devel
 BuildRequires:	libfaad2-devel
@@ -45,7 +51,7 @@ URL: 		http://www.mythtv.org/
 License: 	GPL
 Group: 		Video
 Source0:	%{name}-%{version}-%{fixes}.tar.bz2
-Patch1:		mythplugins-0.23-nolame.patch
+Patch1:		mythplugins-0.24-nolame.patch
 
 BuildRoot: 	%{_tmppath}/%{name}-root
 
@@ -100,14 +106,6 @@ This package is in PLF because it contains software that supports
 codecs that may be covered by software patents.
 %endif
 
-%package -n mythtv-plugin-movies
-Summary:  Movie time plugin for MythTV
-Group:    Video
-Requires: mythtv-frontend >= %{required_myth}
-
-%description -n mythtv-plugin-movies
-A movie time plugin for MythTV.
-
 %package -n mythtv-plugin-netvision
 Summary:  NetVision for MythTV
 Group:    Video
@@ -125,6 +123,7 @@ Obsoletes:	mythnews < 0.20a-7
 %description -n mythtv-plugin-news
 An RSS News feed plugin for MythTV.
 
+%if 0
 %package -n mythtv-plugin-weather
 Summary: 	MythTV module that displays a weather forecast
 Group: 		Video
@@ -133,6 +132,7 @@ Obsoletes:	mythweather < 0.20a-7
 
 %description -n mythtv-plugin-weather
 A MythTV module that displays a weather forcast.
+%endif
 
 %package -n mythtv-mythweb
 Summary: 	The web interface to MythTV
@@ -222,9 +222,9 @@ perl -pi -e's|{PREFIX}/lib$|{PREFIX}/%{_lib}|' settings.pro
 %build
 %configure --enable-all --libdir-name=%{_lib} \
 %if %build_plf
-	--enable-aac --enable-libmp3lame
+	--enable-mp3lame
 %else
-	--disable-aac --disable-libmp3lame
+	--disable-mp3lame
 %endif
 
 %make
@@ -269,7 +269,9 @@ Alias /mythweb %{_var}/www/mythweb
 </Directory>
 EOF
 
-mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,gallery,game,movies,music,netvision,news,weather,video,zoneminder}
+mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,gallery,game,music,netvision,news,video,zoneminder}
+#weather,
+
 
 %clean
 rm -rf %{buildroot}
@@ -307,15 +309,8 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/i18n/mythgame_*.qm
 %{_datadir}/mythtv/game_settings.xml
 %{_datadir}/mythtv/themes/default*/game*
-
-%files -n mythtv-plugin-movies
-%defattr(-,root,root,-)
-%doc mythmovies/COPYING mythmovies/README
-%{_bindir}/ignyte
-%{_libdir}/mythtv/plugins/libmythmovies.so
-%{_datadir}/mythtv/themes/default*/movies-ui.xml
-%{_datadir}/mythtv/themes/default*/mv_*.png
-%{_datadir}/mythtv/i18n/mythmovies_*.qm
+%dir %{_datadir}/mythtv/metadata
+%{_datadir}/mythtv/metadata/Game
 
 %files -n mythtv-plugin-music
 %defattr(-,root,root,-)
@@ -344,6 +339,7 @@ rm -rf %{buildroot}
 %files -n mythtv-plugin-netvision
 %defattr(-,root,root,-)
 %doc mythnetvision/README mythnetvision/ChangeLog mythnetvision/AUTHORS
+%{_bindir}/mythfillnetvision
 %{_libdir}/mythtv/plugins/libmythnetvision.so
 %{_datadir}/mythtv/i18n/mythnetvision_*.qm
 %{_datadir}/mythtv/mythnetvision
@@ -362,6 +358,7 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default/podcast.png
 
 
+%if 0
 %files -n mythtv-plugin-weather
 %defattr(-,root,root,-)
 %doc mythweather/AUTHORS mythweather/COPYING mythweather/README*
@@ -385,6 +382,7 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default*/mw*.png
 %{_datadir}/mythtv/themes/default*/weather-ui.xml
 %{_datadir}/mythtv/weather_settings.xml
+%endif
 
 %files -n mythtv-mythweb
 %defattr(-,root,root,-)
@@ -397,16 +395,14 @@ rm -rf %{buildroot}
 %files -n mythtv-plugin-video
 %defattr(-,root,root,-)
 %doc mythvideo/README*
-%{_bindir}/mtd
 %{_libdir}/mythtv/plugins/libmythvideo.so
 %{_datadir}/mythtv/video_settings.xml
 %{_datadir}/mythtv/videomenu.xml
 %{_datadir}/mythtv/i18n/mythvideo_*.qm
 %{_datadir}/mythtv/mythvideo/scripts
-%{_datadir}/mythtv/themes/default/mv*.png
+%{_datadir}/mythtv/themes/default*/mv*.png
 %{_datadir}/mythtv/themes/default/md_*.png
 %{_datadir}/mythtv/themes/default*/video*.xml
-%{_datadir}/mythtv/themes/default*/dvd*.xml
 %{_localstatedir}/lib/mythvideo
 
 %files -n mythtv-plugin-zoneminder
