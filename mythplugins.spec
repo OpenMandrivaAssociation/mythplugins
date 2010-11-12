@@ -36,7 +36,7 @@ BuildRequires:  python-curl
 BuildRequires:  python-oauth
 BuildRequires:  perl-XML-XPath
 BuildRequires:  perl-Image-Size
-#BuildRequires:  perl-DateTime-Format-ISO8601
+BuildRequires:  perl-DateTime-Format-ISO8601
 %if %build_plf
 BuildRequires:	lame-devel
 BuildRequires:	libfaad2-devel
@@ -123,7 +123,6 @@ Obsoletes:	mythnews < 0.20a-7
 %description -n mythtv-plugin-news
 An RSS News feed plugin for MythTV.
 
-%if 0
 %package -n mythtv-plugin-weather
 Summary: 	MythTV module that displays a weather forecast
 Group: 		Video
@@ -132,7 +131,6 @@ Obsoletes:	mythweather < 0.20a-7
 
 %description -n mythtv-plugin-weather
 A MythTV module that displays a weather forcast.
-%endif
 
 %package -n mythtv-mythweb
 Summary: 	The web interface to MythTV
@@ -269,8 +267,7 @@ Alias /mythweb %{_var}/www/mythweb
 </Directory>
 EOF
 
-mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,gallery,game,music,netvision,news,video,zoneminder}
-#weather,
+mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,gallery,game,music,netvision,news,weather,video,zoneminder}
 
 
 %clean
@@ -358,7 +355,6 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default/podcast.png
 
 
-%if 0
 %files -n mythtv-plugin-weather
 %defattr(-,root,root,-)
 %doc mythweather/AUTHORS mythweather/COPYING mythweather/README*
@@ -382,7 +378,6 @@ rm -rf %{buildroot}
 %{_datadir}/mythtv/themes/default*/mw*.png
 %{_datadir}/mythtv/themes/default*/weather-ui.xml
 %{_datadir}/mythtv/weather_settings.xml
-%endif
 
 %files -n mythtv-mythweb
 %defattr(-,root,root,-)
