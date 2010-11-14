@@ -34,9 +34,13 @@ BuildRequires:	mysql-devel
 BuildRequires:	taglib-devel
 BuildRequires:  python-curl
 BuildRequires:  python-oauth
+BuildRequires:  python-lxml
 BuildRequires:  perl-XML-XPath
 BuildRequires:  perl-Image-Size
+BuildRequires:  perl-Date-Manip
 BuildRequires:  perl-DateTime-Format-ISO8601
+BuildRequires:  perl-SOAP-Lite
+BuildRequires:  perl-XML-Simple
 %if %build_plf
 BuildRequires:	lame-devel
 BuildRequires:	libfaad2-devel
