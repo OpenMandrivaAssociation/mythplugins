@@ -49,7 +49,7 @@ BuildRequires:	libfaad2-static-devel
 BuildRequires:  python-lxml
 BuildRequires:  python-mysql
 # (cg) Ditto for the perl-DateTime-Format-ISO pkg
-BuildRequires:  perl-Class-Factory
+BuildRequires:  perl(Class::Factory::Util)
 
 
 Summary: 	Official MythTV plugins
