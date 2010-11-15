@@ -34,7 +34,6 @@ BuildRequires:	mysql-devel
 BuildRequires:	taglib-devel
 BuildRequires:  python-curl
 BuildRequires:  python-oauth
-BuildRequires:  python-lxml
 BuildRequires:  perl-XML-XPath
 BuildRequires:  perl-Image-Size
 BuildRequires:  perl-Date-Manip
@@ -46,6 +45,12 @@ BuildRequires:	lame-devel
 BuildRequires:	libfaad2-devel
 BuildRequires:	libfaad2-static-devel
 %endif
+# (cg) Remove these once they are required in the python-mythtv package
+BuildRequires:  python-lxml
+BuildRequires:  python-mysql
+# (cg) Ditto for the perl-DateTime-Format-ISO pkg
+BuildRequires:  perl-Class-Factory
+
 
 Summary: 	Official MythTV plugins
 Name: 		%{name}
