@@ -12,6 +12,10 @@
 
 %bcond_with plf
 %if %with plf
+%if %mdvver >= 201100
+# make EVR of plf build higher than regular to allow update, needed with rpm5 mkrel
+%define extrarelsuffix plf
+%endif
 %define distsuffix		plf
 %define build_plf		1
 %endif
@@ -55,7 +59,7 @@ BuildRequires:  perl(Class::Factory::Util)
 Summary: 	Official MythTV plugins
 Name: 		%{name}
 Version: 	%{version}
-Release: 	%{release}
+Release: 	%{release}%{?extrarelsuffix}
 URL: 		http://www.mythtv.org/
 License: 	GPL
 Group: 		Video
