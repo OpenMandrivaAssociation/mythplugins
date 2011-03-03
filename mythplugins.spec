@@ -1,12 +1,16 @@
-
 %define name    mythplugins
 %define version 0.24
-%define fixes 27174
-%define rel 4
+%define gitversion v0.24-199-g53677
+%define fixesdate 20110303
+%define rel 1
 
-%define required_myth 0.24
+%define required_myth %{version}
 
-%define release %mkrel %fixes.%rel
+%if %{fixesdate}
+%define release %mkrel %fixesdate.%rel
+%else
+%define release %mkrel %rel
+%endif
 
 %define build_plf		0
 
@@ -47,7 +51,6 @@ BuildRequires:  perl-XML-Simple
 %if %build_plf
 BuildRequires:	lame-devel
 BuildRequires:	libfaad2-devel
-BuildRequires:	libfaad2-static-devel
 %endif
 # (cg) Remove these once they are required in the python-mythtv package
 BuildRequires:  python-lxml
@@ -63,8 +66,13 @@ Release: 	%{release}%{?extrarelsuffix}
 URL: 		http://www.mythtv.org/
 License: 	GPL
 Group: 		Video
-Source0:	%{name}-%{version}-%{fixes}.tar.bz2
-Patch1:		mythplugins-0.24-nolame.patch
+Source0:	%{name}-%{version}.tar.bz2
+
+%if %{fixesdate}
+Patch1: fixes-%{gitversion}.patch
+%endif
+# (cg) git format-patch --start-number 100 --relative=mythplugins fixes/0.24..mga-0.24-patches
+Patch100: 0100-lame-Allow-building-without-lame-libraries.patch
 
 BuildRoot: 	%{_tmppath}/%{name}-root
 
@@ -221,7 +229,7 @@ and the mythfrontend UI plugin.
 
 %prep
 %setup -q
-%patch1 -p0 -b .lame
+%apply_patches
 
 # Fix /mnt/store -> /var/lib/mythmusic
 perl -pi -e's|/mnt/store/music|%{_localstatedir}/lib/mythmusic|' mythmusic/mythmusic/globalsettings.cpp
