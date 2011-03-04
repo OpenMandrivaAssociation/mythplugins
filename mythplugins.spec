@@ -159,7 +159,7 @@ Group: 		Video
 Requires:	mythtv-backend >= %{required_myth}
 Requires: 	mod_php >= 2.0.54
 Requires:	php-mysql
-%if %mdkversion < 201010
+%if %mdvver < 201010
 Requires(post):   rpm-helper
 Requires(postun):   rpm-helper
 %endif
@@ -208,7 +208,7 @@ Requires:	mythtv-frontend >= %{required_myth}
 %if %build_plf
 Requires:	transcode
 %endif
-%if %mdkversion >= 200710
+%if %mdvver >= 200710
 Requires:	cdrkit-genisoimage
 %else
 Requires:	mkisofs
@@ -295,12 +295,12 @@ mkdir -p %{buildroot}{%_docdir}/mythtv-plugin-{browser,gallery,game,music,netvis
 rm -rf %{buildroot}
 
 %post -n mythtv-mythweb
-%if %mdkversion < 201010
+%if %mdvver < 201010
 %_post_webapp
 %endif
 
 %postun -n mythtv-mythweb
-%if %mdkversion < 201010
+%if %mdvver < 201010
 %_postun_webapp
 %endif
 
