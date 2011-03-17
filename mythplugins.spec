@@ -2,7 +2,7 @@
 %define version 0.24
 %define gitversion v0.24-199-g53677
 %define fixesdate 20110303
-%define rel 1
+%define rel 2
 
 %define required_myth %{version}
 
