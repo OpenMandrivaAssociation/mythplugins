@@ -1,92 +1,97 @@
-From fae3a90d5df1ef1606f1506b21bb536c3873db32 Mon Sep 17 00:00:00 2001
+From 43abaf8b98cf399d8d860cb147f9f8c743123a1e Mon Sep 17 00:00:00 2001
 From: Colin Guthrie <cguthrie@mandriva.org>
 Date: Thu, 3 Mar 2011 17:47:47 +0000
 Subject: [PATCH] lame: Allow building without lame libraries.
 
 ---
- configure                              |   26 ++++++++++++++++++++------
- mythmusic/mythmusic/cdrip.cpp          |    7 +++++++
- mythmusic/mythmusic/globalsettings.cpp |    7 +++++++
- mythmusic/mythmusic/mythmusic.pro      |    6 +++---
- settings.pro                           |    2 +-
- 5 files changed, 38 insertions(+), 10 deletions(-)
+ mythplugins/configure                              |   22 +++++++++++++++-----
+ mythplugins/mythmusic/mythmusic/cdrip.cpp          |    7 +++++++
+ mythplugins/mythmusic/mythmusic/importsettings.cpp |    9 ++++++++
+ mythplugins/mythmusic/mythmusic/mythmusic.pro      |    6 +++---
+ mythplugins/settings.pro                           |    1 -
+ 5 files changed, 36 insertions(+), 9 deletions(-)
 
-diff --git a/configure b/configure
-index 47973ea..c4bd69c 100755
---- a/configure
-+++ b/configure
-@@ -115,6 +115,7 @@ opengl
- libvisual
+diff --git mythplugins/configure mythplugins/configure
+index 15946c0..2900a2b 100755
+--- mythplugins/configure
++++ mythplugins/configure
+@@ -285,6 +285,7 @@ zoneminder
+ CONFIG_LIST="
+ opengl
  fftw
- sdl
 +mp3lame
  exif
  newexif
  dcraw
-@@ -174,6 +175,7 @@ MythMusic related options:
-   --enable-libvisual       enable libvisual visualizers [$libvisual]
+@@ -294,7 +295,6 @@ cdio
+ DEPEND_LIST="
+ vorbis
+ flac
+-mp3lame
+ taglib
+ "
+ 
+@@ -350,6 +350,7 @@ MythGame related options:
+ MythMusic related options:
+   --enable-mythmusic       build the mythmusic plugin [$music]
    --enable-fftw            enable fftw visualizers [$fftw]
-   --enable-sdl             use SDL for the synaesthesia output [$sdl]
 +  --enable-libmp3lame      enable MP3 encoding support using LAME [$mp3lame]
  
- MythNews related options:
-   --enable-mythnews        build the mythnews plugin [$news]
-@@ -522,11 +524,11 @@ if test "$music" != "no" ; then
-         echo "MythMusic requires CDDA Paranoia."
+ MythNetvision related options:
+   --enable-mythnetvision   build the mythnetvision plugin [$netvision]
+@@ -650,9 +651,10 @@ if enabled music ; then
+         disable cdio
      fi
  
--    mp3lame="no"
--    if has_header lame/lame.h && has_library libmp3lame ; then
--        mp3lame="yes"
--    else
+-    if ! check_lib lame/lame.h lame_init -lmp3lame ; then
+-        disable mp3lame
 -        echo "MythMusic requires the LAME mp3 encoder."
-+    if test "$mp3lame" != "no" ; then
-+        mp3lame="no"
-+        if has_header lame/lame.h && has_library libmp3lame ; then
-+            mp3lame="yes"
++    if enabled mp3lame ; then
++        if ! check_lib lame/lame.h lame_init -lmp3lame ; then
++            disable mp3lame
 +        fi
      fi
  
-     taglib="no"
-@@ -550,7 +552,7 @@ if test "$music" != "no" ; then
-         fi
+     taglib_minor="0"
+@@ -672,7 +674,7 @@ if enabled music ; then
+         echo "MythMusic requires taglib 1.6 or later."
      fi
  
--    if test "$vorbis" = "no" -o "$flac" = "no" -o "$mp3lame" = "no" -o "$taglib" = "no" -o "$cdlibs" = "no" ; then
-+    if test "$vorbis" = "no" -o "$flac" = "no" -o "$taglib" = "no" -o "$cdlibs" = "no" ; then
+-    if disabled vorbis || disabled flac || disabled mp3lame || disabled taglib ; then
++    if disabled vorbis || disabled flac || disabled taglib ; then
          echo "Disabling MythMusic due to missing dependencies."
-         music="no"
+         disable music
      fi
-@@ -849,6 +851,18 @@ if test "$music" = "yes" ; then
-     if test "$taglib" = "yes" ; then
+@@ -902,6 +904,16 @@ if enabled music ; then
+     if enabled taglib ; then
          echo "INCLUDEPATH += `taglib-config --prefix`/include/taglib" >> ./mythmusic/mythmusic/config.pro
      fi
 +
-+    if test "$mp3lame" = "yes" ; then
++    if enabled mp3lame ; then
 +        echo "        MP3 encoding   support will be included in MythMusic"
 +        echo "#define LAME 1" >> ./mythmusic/mythmusic/config.h
 +        echo "LIBS += -lmp3lame" >> ./mythmusic/mythmusic/config.pro
 +        echo "HEADERS += lameencoder.h" >> ./mythmusic/mythmusic/config.pro
 +        echo "SOURCES += lameencoder.cpp" >> ./mythmusic/mythmusic/config.pro
-+    fi
-+
-+    if test "$mp3lame" = "no" ; then
++    else
 +        echo "        MP3 encoding   support will not be included in MythMusic"
 +    fi
  fi
  
  ###########################################################
-diff --git a/mythmusic/mythmusic/cdrip.cpp b/mythmusic/mythmusic/cdrip.cpp
-index d6f522c..66fca65 100644
---- a/mythmusic/mythmusic/cdrip.cpp
-+++ b/mythmusic/mythmusic/cdrip.cpp
-@@ -45,11 +45,14 @@ using namespace std;
- #include <mythuibuttonlist.h>
+diff --git mythplugins/mythmusic/mythmusic/cdrip.cpp mythplugins/mythmusic/mythmusic/cdrip.cpp
+index 053fda8..a0ef029 100644
+--- mythplugins/mythmusic/mythmusic/cdrip.cpp
++++ mythplugins/mythmusic/mythmusic/cdrip.cpp
+@@ -46,13 +46,16 @@ using namespace std;
+ #include <mythtv/libmythui/mythprogressdialog.h>
  
  // MythMusic includes
 +#include "config.h"
  #include "cdrip.h"
+ #ifdef HAVE_CDIO
  #include "cddecoder.h"
+ #endif
  #include "encoder.h"
  #include "vorbisencoder.h"
 +#ifdef LAME
@@ -95,7 +100,7 @@ index d6f522c..66fca65 100644
  #include "flacencoder.h"
  #include "genres.h"
  #include "editmetadata.h"
-@@ -193,7 +196,9 @@ void CDRipperThread::run(void)
+@@ -233,7 +236,9 @@ void CDRipperThread::run(void)
  
      QString textstatus;
      QString encodertype = gCoreContext->GetSetting("EncoderType");
@@ -105,7 +110,7 @@ index d6f522c..66fca65 100644
  
      m_totalSectors = 0;
      m_totalSectorsDone = 0;
-@@ -260,6 +265,7 @@ void CDRipperThread::run(void)
+@@ -300,6 +305,7 @@ void CDRipperThread::run(void)
  
                  if (m_quality < 3)
                  {
@@ -113,106 +118,104 @@ index d6f522c..66fca65 100644
                      if (encodertype == "mp3")
                      {
                          outfile += ".mp3";
-@@ -267,6 +273,7 @@ void CDRipperThread::run(void)
+@@ -307,6 +313,7 @@ void CDRipperThread::run(void)
                                                        titleTrack, mp3usevbr));
                      }
                      else // ogg
 +#endif
                      {
                          outfile += ".ogg";
-                         encoder.reset(new VorbisEncoder(outfile, m_quality,
-diff --git a/mythmusic/mythmusic/globalsettings.cpp b/mythmusic/mythmusic/globalsettings.cpp
-index 565981b..c19b581 100644
---- a/mythmusic/mythmusic/globalsettings.cpp
-+++ b/mythmusic/mythmusic/globalsettings.cpp
-@@ -28,6 +28,7 @@
+                         encoder.reset(new VorbisEncoder(gMusicData->musicDir + outfile, m_quality,
+diff --git mythplugins/mythmusic/mythmusic/importsettings.cpp mythplugins/mythmusic/mythmusic/importsettings.cpp
+index a5611e2..9aaceb8 100644
+--- mythplugins/mythmusic/mythmusic/importsettings.cpp
++++ mythplugins/mythmusic/mythmusic/importsettings.cpp
+@@ -5,6 +5,7 @@
+ #include <mythcorecontext.h>
  
- // mythmusic
- #include "globalsettings.h"
+ #include "importsettings.h"
 +#include "config.h"
- #include "mainvisual.h"
- #include "mythlistview-qt3.h"
  
-@@ -185,7 +186,9 @@ static HostComboBox *EncoderType()
-     HostComboBox *gc = new HostComboBox("EncoderType");
-     gc->setLabel(QObject::tr("Encoding"));
-     gc->addSelection(QObject::tr("Ogg Vorbis"), "ogg");
+ ImportSettings::ImportSettings(MythScreenStack *parent, const char *name)
+         : MythScreenType(parent, name),
+@@ -68,7 +69,9 @@ bool ImportSettings::Create()
+         m_ejectCD->SetCheckState(MythUIStateType::Full);
+ 
+     new MythUIButtonListItem(m_encoderType, tr("Ogg Vorbis"), qVariantFromValue(QString("ogg")));
 +#ifdef LAME
-     gc->addSelection(QObject::tr("Lame (MP3)"), "mp3");
+     new MythUIButtonListItem(m_encoderType, tr("Lame (MP3)"), qVariantFromValue(QString("mp3")));
 +#endif
-     gc->setHelpText(QObject::tr("Audio encoder to use for CD ripping. "
-                     "Note that the quality level 'Perfect' will use the "
- 		                "FLAC encoder."));
-@@ -204,6 +207,7 @@ static HostComboBox *DefaultRipQuality()
-     return gc;
- };
+     m_encoderType->SetValueByData(gCoreContext->GetSetting("EncoderType"));
+ 
+     new MythUIButtonListItem(m_defaultRipQuality, tr("Low"), qVariantFromValue(0));
+@@ -77,9 +80,13 @@ bool ImportSettings::Create()
+     new MythUIButtonListItem(m_defaultRipQuality, tr("Perfect"), qVariantFromValue(3));
+     m_defaultRipQuality->SetValueByData(gCoreContext->GetSetting("DefaultRipQuality"));
  
 +#ifdef LAME
- static HostCheckBox *Mp3UseVBR()
- {
-     HostCheckBox *gc = new HostCheckBox("Mp3UseVBR");
-@@ -214,6 +218,7 @@ static HostCheckBox *Mp3UseVBR()
-                     "The Ogg encoder will always use variable bitrates."));
-     return gc;
- };
+     int loadMp3UseVBR = gCoreContext->GetNumSetting("Mp3UseVBR", 0);
+     if (loadMp3UseVBR == 1)
+         m_mp3UseVBR->SetCheckState(MythUIStateType::Full);
++#else
++    m_mp3UseVBR->SetVisible(false);
 +#endif
  
- static HostLineEdit *FilenameTemplate()
- {
-@@ -649,7 +654,9 @@ MusicRipperSettings::MusicRipperSettings(void)
-     encodersettings->setLabel(QObject::tr("CD Ripper Settings (part 2)"));
-     encodersettings->addChild(EncoderType());
-     encodersettings->addChild(DefaultRipQuality());
-+#ifdef LAME
-     encodersettings->addChild(Mp3UseVBR());
-+#endif
-     addChild(encodersettings);
- }
+     connect(m_saveButton, SIGNAL(Clicked()), this, SLOT(slotSave()));
+     connect(m_cancelButton, SIGNAL(Clicked()), this, SLOT(Close()));
+@@ -140,8 +147,10 @@ void ImportSettings::slotSave(void)
+     int saveEjectCD = (m_ejectCD->GetCheckState() == MythUIStateType::Full) ? 1 : 0;
+     gCoreContext->SaveSetting("EjectCDAfterRipping", saveEjectCD);
  
-diff --git a/mythmusic/mythmusic/mythmusic.pro b/mythmusic/mythmusic/mythmusic.pro
-index 3ba7a5f..7fdd865 100644
---- a/mythmusic/mythmusic/mythmusic.pro
-+++ b/mythmusic/mythmusic/mythmusic.pro
-@@ -20,7 +20,7 @@ LIBS += -lmythavformat
++#ifdef LAME
+     int saveMp3UseVBR = (m_mp3UseVBR->GetCheckState() == MythUIStateType::Full) ? 1 : 0;
+     gCoreContext->SaveSetting("Mp3UseVBR", saveMp3UseVBR);
++#endif
+ 
+     gCoreContext->dispatch(MythEvent(QString("MUSIC_SETTINGS_CHANGED IMPORT_SETTINGS")));
+ 
+diff --git mythplugins/mythmusic/mythmusic/mythmusic.pro mythplugins/mythmusic/mythmusic/mythmusic.pro
+index 585d991..b86b919 100644
+--- mythplugins/mythmusic/mythmusic/mythmusic.pro
++++ mythplugins/mythmusic/mythmusic/mythmusic.pro
+@@ -18,7 +18,7 @@ INSTALLS += target
+ LIBS += -lmythavformat
  LIBS += -lmythavcodec
- LIBS += -lmythavcore
  LIBS += -lmythavutil
 -LIBS += -ltag -logg -lvorbisfile -lvorbis -lvorbisenc -lFLAC -lmp3lame
 +LIBS += -ltag -logg -lvorbisfile -lvorbis -lvorbisenc -lFLAC
  
- cdaudio: LIBS += -lcdaudio
- paranoia:LIBS += -lcdda_paranoia -lcdda_interface
-@@ -31,7 +31,7 @@ HEADERS += decoder.h flacencoder.h mainvisual.h
- HEADERS += metadata.h playbackbox.h playlist.h polygon.h
+ # Input
+ HEADERS += constants.h
+@@ -26,7 +26,7 @@ HEADERS += decoder.h flacencoder.h mainvisual.h
+ HEADERS += metadata.h playlist.h polygon.h
  HEADERS += streaminput.h synaesthesia.h encoder.h visualize.h avfdecoder.h
- HEADERS += treecheckitem.h vorbisencoder.h polygon.h
--HEADERS += bumpscope.h globalsettings.h lameencoder.h dbcheck.h
-+HEADERS += bumpscope.h globalsettings.h dbcheck.h
+ HEADERS += vorbisencoder.h polygon.h
+-HEADERS += bumpscope.h lameencoder.h dbcheck.h
++HEADERS += bumpscope.h dbcheck.h
+ HEADERS += importmusic.h
  HEADERS += metaio.h metaiotaglib.h
  HEADERS += metaioflacvorbis.h metaioavfcomment.h metaiomp4.h
- HEADERS += metaiowavpack.h metaioid3.h metaiooggvorbis.h
-@@ -49,7 +49,7 @@ SOURCES += cddecoder.cpp cdrip.cpp decoder.cpp
+@@ -47,7 +47,7 @@ SOURCES += decoder.cpp
  SOURCES += flacencoder.cpp main.cpp
- SOURCES += mainvisual.cpp metadata.cpp playbackbox.cpp playlist.cpp
+ SOURCES += mainvisual.cpp metadata.cpp playlist.cpp
  SOURCES += streaminput.cpp encoder.cpp dbcheck.cpp
--SOURCES += synaesthesia.cpp treecheckitem.cpp lameencoder.cpp
-+SOURCES += synaesthesia.cpp treecheckitem.cpp
- SOURCES += vorbisencoder.cpp visualize.cpp bumpscope.cpp globalsettings.cpp
- SOURCES += databasebox.cpp genres.cpp
+-SOURCES += synaesthesia.cpp lameencoder.cpp
++SOURCES += synaesthesia.cpp
+ SOURCES += vorbisencoder.cpp visualize.cpp bumpscope.cpp
+ SOURCES += genres.cpp importmusic.cpp
  SOURCES += metaio.cpp metaiotaglib.cpp
-diff --git a/settings.pro b/settings.pro
-index 4ddc739..9bba69a 100644
---- a/settings.pro
-+++ b/settings.pro
-@@ -60,7 +60,7 @@ LOCAL_LIBDIR_X11 =
- }
- QMAKE_LIBDIR_X11 = 
+diff --git mythplugins/settings.pro mythplugins/settings.pro
+index 8d0f5aa..25f4483 100644
+--- mythplugins/settings.pro
++++ mythplugins/settings.pro
+@@ -62,7 +62,6 @@ QMAKE_LIBDIR_X11 =
  
--EXTRA_LIBS += -lfreetype -lmp3lame
-+EXTRA_LIBS += -lfreetype
+ EXTRA_LIBS += $$EXTRALIBS
+ EXTRA_LIBS += $$FREETYPE_LIBS
+-EXTRA_LIBS += -lmp3lame
  EXTRA_LIBS += $$CONFIG_AUDIO_ALSA_LIBS
  EXTRA_LIBS += $$CONFIG_AUDIO_JACK_LIBS
  EXTRA_LIBS += $$CONFIG_FIREWIRE_LIBS
 -- 
-1.7.4.1
+1.7.10
 
