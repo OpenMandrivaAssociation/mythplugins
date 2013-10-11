@@ -243,11 +243,7 @@ cat >> %{buildroot}%{_sysconfdir}/httpd/conf/webapps.d/mythweb.conf <<EOF
 
 Alias /mythweb %{_var}/www/mythweb
 <Directory %{_var}/www/mythweb>
-    Order deny,allow
-    Deny from all
-    # Only allow localhost access by default. Customise to suit your needs
-    # (customisations should be placed in a separate file in conf/vhosts.d/)
-    Allow from 127.0.0.1
+    Require host 127.0.0.1
 </Directory>
 EOF
 
