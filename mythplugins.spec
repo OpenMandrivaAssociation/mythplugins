@@ -51,7 +51,7 @@ BuildRequires:	python-oauth
 # (cg) Remove these once they are required in the python-mythtv package
 BuildRequires:	python-lxml
 BuildRequires:	python-mysql
-BuildRequires:	libmyth-devel >= %{version}
+BuildRequires:	libmythtv-devel >= %{version}
 BuildRequires:	python-mythtv >= %{version}
 BuildRequires:	cdda-devel
 BuildRequires:	mysql-devel
