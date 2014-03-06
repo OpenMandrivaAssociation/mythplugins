@@ -200,7 +200,8 @@ and the mythfrontend UI plugin.
 %apply_patches
 
 %build
-%configure \
+./configure \
+	--prefix=%{_prefix} \
 	--enable-all \
 	--libdir-name=%{_lib} \
 %if %{build_plf}
