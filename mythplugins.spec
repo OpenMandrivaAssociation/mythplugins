@@ -6,7 +6,7 @@
 %endif
 
 %define gitversion v0.25.2-16-gd5192
-#define fixesdate 
+%define fixesdate 0
 %define rel 2
 
 %if %{fixesdate}
