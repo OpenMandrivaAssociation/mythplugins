@@ -6,7 +6,7 @@
 %endif
 
 %define gitversion v0.25.2-16-gd5192
-%define fixesdate 20120829
+#define fixesdate 
 %define rel 1
 
 %if %{fixesdate}
@@ -27,7 +27,7 @@
 
 Summary:	Official MythTV plugins
 Name:		mythplugins
-Version:	0.25.2
+Version:	0.26.0
 Release:	%{release}%{?extrarelsuffix}
 License:	GPLv2
 Group:		Video
