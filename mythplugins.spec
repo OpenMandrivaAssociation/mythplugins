@@ -36,6 +36,7 @@ Source0:	ftp://ftp.osuosl.org/pub/mythtv/%{name}-%{version}.tar.bz2
 %if %{fixesdate}
 Patch1:		fixes-%{gitversion}.patch
 %endif
+Patch100:	0100-lame-Allow-building-without-lame-libraries.patch
 
 # (cg) Ditto for the perl-DateTime-Format-ISO pkg
 BuildRequires:	perl(Class::Factory::Util)
