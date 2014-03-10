@@ -279,6 +279,7 @@ mkdir -p %{buildroot}%{_docdir}/mythtv-plugin-{browser,gallery,game,music,netvis
 %doc mythmusic/AUTHORS mythmusic/COPYING mythmusic/README* mythmusic/musicdb
 %{_datadir}/mythtv/music_settings.xml
 %{_datadir}/mythtv/musicmenu.xml
+%{_datadir}/mythtv/mythmusic/streams.xml
 %{_libdir}/mythtv/plugins/libmythmusic.so
 %{_localstatedir}/lib/mythmusic
 %{_datadir}/mythtv/i18n/mythmusic_*.qm
@@ -297,6 +298,7 @@ mkdir -p %{buildroot}%{_docdir}/mythtv-plugin-{browser,gallery,game,music,netvis
 %{_datadir}/mythtv/themes/default/track_info_background.png
 %{_datadir}/mythtv/themes/default/miniplayer_background.png
 %{_datadir}/mythtv/themes/default-wide/music-sel-bg.png
+%{_datadir}/mythtv/themes/default-wide/stream-ui.xml
 
 %files -n mythtv-plugin-netvision
 %doc mythnetvision/README mythnetvision/ChangeLog mythnetvision/AUTHORS
