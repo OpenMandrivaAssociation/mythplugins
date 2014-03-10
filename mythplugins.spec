@@ -46,6 +46,7 @@ BuildRequires:	perl-Date-Manip
 BuildRequires:	perl-DateTime-Format-ISO8601
 BuildRequires:	perl-SOAP-Lite
 BuildRequires:	perl-XML-Simple
+BuildRequires:	perl-JSON
 BuildRequires:	python-curl
 BuildRequires:	python-oauth
 # (cg) Remove these once they are required in the python-mythtv package
