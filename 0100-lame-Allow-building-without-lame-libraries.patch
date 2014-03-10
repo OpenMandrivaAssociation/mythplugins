@@ -1,221 +1,316 @@
-From 43abaf8b98cf399d8d860cb147f9f8c743123a1e Mon Sep 17 00:00:00 2001
+From d247094c700afc4ef4627d12fd5e067edfb49add Mon Sep 17 00:00:00 2001
 From: Colin Guthrie <cguthrie@mandriva.org>
-Date: Thu, 3 Mar 2011 17:47:47 +0000
-Subject: [PATCH] lame: Allow building without lame libraries.
+Date: Thu, 3 Mar 2011 16:21:26 +0000
+Subject: [PATCH 100/102] lame: Allow building without lame libraries.
 
 ---
- mythplugins/configure                              |   22 +++++++++++++++-----
- mythplugins/mythmusic/mythmusic/cdrip.cpp          |    7 +++++++
- mythplugins/mythmusic/mythmusic/importsettings.cpp |    9 ++++++++
- mythplugins/mythmusic/mythmusic/mythmusic.pro      |    6 +++---
- mythplugins/settings.pro                           |    1 -
- 5 files changed, 36 insertions(+), 9 deletions(-)
+ mythtv/configure                              |  8 +++----
+ mythtv/libs/libmythtv/NuppelVideoRecorder.cpp | 32 ++++++++++++++++++++++++---
+ mythtv/libs/libmythtv/NuppelVideoRecorder.h   |  5 +++++
+ mythtv/libs/libmythtv/libmythtv.pro           |  7 +++++-
+ mythtv/libs/libmythtv/recordingprofile.cpp    | 16 +++++++++++++-
+ 5 files changed, 58 insertions(+), 10 deletions(-)
 
-diff --git mythplugins/configure mythplugins/configure
-index 15946c0..2900a2b 100755
---- mythplugins/configure
-+++ mythplugins/configure
-@@ -285,6 +285,7 @@ zoneminder
- CONFIG_LIST="
- opengl
- fftw
-+mp3lame
- exif
- newexif
- dcraw
-@@ -294,7 +295,6 @@ cdio
- DEPEND_LIST="
- vorbis
- flac
--mp3lame
- taglib
- "
+diff --git mythtv/configure mythtv/configure
+index 27958e1..1d083dc 100755
+--- mythtv/configure
++++ mythtv/configure
+@@ -2240,7 +2240,7 @@ enable hdpvr
+ enable iptv
+ enable ivtv
+ enable asi
+-enable lamemp3
++disable libmp3lame
+ enable libass
+ enable libcec
+ enable libcrypto
+@@ -4453,10 +4453,6 @@ enabled asi && check_cc <<EOF || disable asi
+ int main(void) { return 1; }
+ EOF
  
-@@ -350,6 +350,7 @@ MythGame related options:
- MythMusic related options:
-   --enable-mythmusic       build the mythmusic plugin [$music]
-   --enable-fftw            enable fftw visualizers [$fftw]
-+  --enable-libmp3lame      enable MP3 encoding support using LAME [$mp3lame]
+-# Check that all MythTV build "requirements" are met:
+-enabled lamemp3 && check_lib2 lame/lame.h lame_init -lmp3lame -lm ||
+-    die "ERROR! You must have the Lame MP3 encoding library installed to compile MythTV."
+-
+ # Qt dependency checks
+ if test $target_os = mingw32 ; then
+     qt_inc="-I`cd $(${qmake} -query QT_INSTALL_HEADERS); pwd`"
+@@ -5210,6 +5206,8 @@ enabled audio_oss         && append CCONFIG "using_oss"
+ enabled audio_pulse       && append CCONFIG "using_pulse"
+ enabled audio_pulseoutput && append CCONFIG "using_pulseoutput"
  
- MythNetvision related options:
-   --enable-mythnetvision   build the mythnetvision plugin [$netvision]
-@@ -650,9 +651,10 @@ if enabled music ; then
-         disable cdio
-     fi
- 
--    if ! check_lib lame/lame.h lame_init -lmp3lame ; then
--        disable mp3lame
--        echo "MythMusic requires the LAME mp3 encoder."
-+    if enabled mp3lame ; then
-+        if ! check_lib lame/lame.h lame_init -lmp3lame ; then
-+            disable mp3lame
-+        fi
-     fi
- 
-     taglib_minor="0"
-@@ -672,7 +674,7 @@ if enabled music ; then
-         echo "MythMusic requires taglib 1.6 or later."
-     fi
- 
--    if disabled vorbis || disabled flac || disabled mp3lame || disabled taglib ; then
-+    if disabled vorbis || disabled flac || disabled taglib ; then
-         echo "Disabling MythMusic due to missing dependencies."
-         disable music
-     fi
-@@ -902,6 +904,16 @@ if enabled music ; then
-     if enabled taglib ; then
-         echo "INCLUDEPATH += `taglib-config --prefix`/include/taglib" >> ./mythmusic/mythmusic/config.pro
-     fi
++enabled libmp3lame        && append CCONFIG "using_lame"
 +
-+    if enabled mp3lame ; then
-+        echo "        MP3 encoding   support will be included in MythMusic"
-+        echo "#define LAME 1" >> ./mythmusic/mythmusic/config.h
-+        echo "LIBS += -lmp3lame" >> ./mythmusic/mythmusic/config.pro
-+        echo "HEADERS += lameencoder.h" >> ./mythmusic/mythmusic/config.pro
-+        echo "SOURCES += lameencoder.cpp" >> ./mythmusic/mythmusic/config.pro
-+    else
-+        echo "        MP3 encoding   support will not be included in MythMusic"
-+    fi
- fi
- 
- ###########################################################
-diff --git mythplugins/mythmusic/mythmusic/cdrip.cpp mythplugins/mythmusic/mythmusic/cdrip.cpp
-index 053fda8..a0ef029 100644
---- mythplugins/mythmusic/mythmusic/cdrip.cpp
-+++ mythplugins/mythmusic/mythmusic/cdrip.cpp
-@@ -46,13 +46,16 @@ using namespace std;
- #include <mythtv/libmythui/mythprogressdialog.h>
- 
- // MythMusic includes
-+#include "config.h"
- #include "cdrip.h"
- #ifdef HAVE_CDIO
- #include "cddecoder.h"
- #endif
- #include "encoder.h"
- #include "vorbisencoder.h"
+ if enabled darwin_da; then
+   append CCONFIG "darwin_da"
+   echo "SLIB_UNINSTALL_EXTRA_CMD=${SLIB_UNINSTALL_EXTRA_CMD}" >> $TMPMAK
+diff --git mythtv/libs/libmythtv/NuppelVideoRecorder.cpp mythtv/libs/libmythtv/NuppelVideoRecorder.cpp
+index a9fbad8..4ce879b 100644
+--- mythtv/libs/libmythtv/NuppelVideoRecorder.cpp
++++ mythtv/libs/libmythtv/NuppelVideoRecorder.cpp
+@@ -94,7 +94,11 @@ NuppelVideoRecorder::NuppelVideoRecorder(TVRec *rec, ChannelBase *channel) :
+     pid = pid2 = 0;
+     inputchannel = 1;
+     compression = 1;
 +#ifdef LAME
- #include "lameencoder.h"
-+#endif
- #include "flacencoder.h"
- #include "genres.h"
- #include "editmetadata.h"
-@@ -233,7 +236,9 @@ void CDRipperThread::run(void)
- 
-     QString textstatus;
-     QString encodertype = gCoreContext->GetSetting("EncoderType");
-+#ifdef LAME
-     bool mp3usevbr = gCoreContext->GetNumSetting("Mp3UseVBR", 0);
-+#endif
- 
-     m_totalSectors = 0;
-     m_totalSectorsDone = 0;
-@@ -300,6 +305,7 @@ void CDRipperThread::run(void)
- 
-                 if (m_quality < 3)
-                 {
-+#ifdef LAME
-                     if (encodertype == "mp3")
-                     {
-                         outfile += ".mp3";
-@@ -307,6 +313,7 @@ void CDRipperThread::run(void)
-                                                       titleTrack, mp3usevbr));
-                     }
-                     else // ogg
-+#endif
-                     {
-                         outfile += ".ogg";
-                         encoder.reset(new VorbisEncoder(gMusicData->musicDir + outfile, m_quality,
-diff --git mythplugins/mythmusic/mythmusic/importsettings.cpp mythplugins/mythmusic/mythmusic/importsettings.cpp
-index a5611e2..9aaceb8 100644
---- mythplugins/mythmusic/mythmusic/importsettings.cpp
-+++ mythplugins/mythmusic/mythmusic/importsettings.cpp
-@@ -5,6 +5,7 @@
- #include <mythcorecontext.h>
- 
- #include "importsettings.h"
-+#include "config.h"
- 
- ImportSettings::ImportSettings(MythScreenStack *parent, const char *name)
-         : MythScreenType(parent, name),
-@@ -68,7 +69,9 @@ bool ImportSettings::Create()
-         m_ejectCD->SetCheckState(MythUIStateType::Full);
- 
-     new MythUIButtonListItem(m_encoderType, tr("Ogg Vorbis"), qVariantFromValue(QString("ogg")));
-+#ifdef LAME
-     new MythUIButtonListItem(m_encoderType, tr("Lame (MP3)"), qVariantFromValue(QString("mp3")));
-+#endif
-     m_encoderType->SetValueByData(gCoreContext->GetSetting("EncoderType"));
- 
-     new MythUIButtonListItem(m_defaultRipQuality, tr("Low"), qVariantFromValue(0));
-@@ -77,9 +80,13 @@ bool ImportSettings::Create()
-     new MythUIButtonListItem(m_defaultRipQuality, tr("Perfect"), qVariantFromValue(3));
-     m_defaultRipQuality->SetValueByData(gCoreContext->GetSetting("DefaultRipQuality"));
- 
-+#ifdef LAME
-     int loadMp3UseVBR = gCoreContext->GetNumSetting("Mp3UseVBR", 0);
-     if (loadMp3UseVBR == 1)
-         m_mp3UseVBR->SetCheckState(MythUIStateType::Full);
+     compressaudio = 1;
 +#else
-+    m_mp3UseVBR->SetVisible(false);
++    compressaudio = 0;
 +#endif
- 
-     connect(m_saveButton, SIGNAL(Clicked()), this, SLOT(slotSave()));
-     connect(m_cancelButton, SIGNAL(Clicked()), this, SLOT(Close()));
-@@ -140,8 +147,10 @@ void ImportSettings::slotSave(void)
-     int saveEjectCD = (m_ejectCD->GetCheckState() == MythUIStateType::Full) ? 1 : 0;
-     gCoreContext->SaveSetting("EjectCDAfterRipping", saveEjectCD);
+     usebttv = 1;
+     width  = 352;
+     height = 240;
+@@ -106,11 +110,13 @@ NuppelVideoRecorder::NuppelVideoRecorder(TVRec *rec, ChannelBase *channel) :
+     framerate_multiplier = 1.0;
+     height_multiplier = 1.0;
  
 +#ifdef LAME
-     int saveMp3UseVBR = (m_mp3UseVBR->GetCheckState() == MythUIStateType::Full) ? 1 : 0;
-     gCoreContext->SaveSetting("Mp3UseVBR", saveMp3UseVBR);
+     mp3quality = 3;
+     gf = NULL;
++    mp3buf = NULL;
++#endif
+     rtjc = NULL;
+     strm = NULL;
+-    mp3buf = NULL;
+ 
+     transcoding = false;
+ 
+@@ -204,10 +210,12 @@ NuppelVideoRecorder::~NuppelVideoRecorder(void)
+     }
+     if (rtjc)
+         delete rtjc;
++#ifdef LAME
+     if (mp3buf)
+         delete [] mp3buf;
+     if (gf)
+         lame_close(gf);
++#endif
+     if (strm)
+         delete [] strm;
+     if (audio_device)
+@@ -328,8 +336,10 @@ void NuppelVideoRecorder::SetOption(const QString &opt, int value)
+         hmjpg_vdecimation = value;
+     else if (opt == "audiocompression")
+         compressaudio = value;
++#ifdef LAME
+     else if (opt == "mp3quality")
+         mp3quality = value;
++#endif
+     else if (opt == "samplerate")
+         audio_samplerate = value;
+     else if (opt == "audioframesize")
+@@ -429,13 +439,16 @@ void NuppelVideoRecorder::SetOptionsFromProfile(RecordingProfile *profile,
+     if ((tmp = profile->byName("audiocodec")))
+         setting = tmp->getValue();
+ 
++#ifdef LAME
+     if (setting == "MP3")
+     {
+         SetOption("audiocompression", 1);
+         SetIntOption(profile, "mp3quality");
+         SetIntOption(profile, "samplerate");
+     }
+-    else if (setting == "Uncompressed")
++    else
++#endif
++         if (setting == "Uncompressed")
+     {
+         SetOption("audiocompression", 0);
+         SetIntOption(profile, "samplerate");
+@@ -752,7 +765,6 @@ void NuppelVideoRecorder::Initialize(void)
+ int NuppelVideoRecorder::AudioInit(bool skipdevice)
+ {
+     int blocksize;
+-    int tmp;
+ 
+     if (!skipdevice)
+     {
+@@ -790,6 +802,8 @@ int NuppelVideoRecorder::AudioInit(bool skipdevice)
+ 
+     if (compressaudio)
+     {
++#ifdef LAME
++        int tmp;
+         gf = lame_init();
+         lame_set_bWriteVbrTag(gf, 0);
+         lame_set_quality(gf, mp3quality);
+@@ -810,9 +824,17 @@ int NuppelVideoRecorder::AudioInit(bool skipdevice)
+                 "AudioInit(): lame support requires 16bit audio");
+             compressaudio = false;
+         }
++#else
++        LOG(VB_GENERAL, LOG_ERR, LOC +
++                "AudioInit(): support for LAME MP3 compression not enabled, disabling");
++        compressaudio = false;
++#endif
+     }
++
++#ifdef LAME
+     mp3buf_size = (int)(1.25 * 16384 + 7200);
+     mp3buf = new char[mp3buf_size];
 +#endif
  
-     gCoreContext->dispatch(MythEvent(QString("MUSIC_SETTINGS_CHANGED IMPORT_SETTINGS")));
+     return 0;
+ }
+@@ -2156,6 +2178,7 @@ void NuppelVideoRecorder::WriteHeader(void)
+         moredata.rtjpeg_chroma_filter = M2;
+     }
  
-diff --git mythplugins/mythmusic/mythmusic/mythmusic.pro mythplugins/mythmusic/mythmusic/mythmusic.pro
-index 585d991..b86b919 100644
---- mythplugins/mythmusic/mythmusic/mythmusic.pro
-+++ mythplugins/mythmusic/mythmusic/mythmusic.pro
-@@ -18,7 +18,7 @@ INSTALLS += target
- LIBS += -lmythavformat
- LIBS += -lmythavcodec
- LIBS += -lmythavutil
--LIBS += -ltag -logg -lvorbisfile -lvorbis -lvorbisenc -lFLAC -lmp3lame
-+LIBS += -ltag -logg -lvorbisfile -lvorbis -lvorbisenc -lFLAC
++#ifdef LAME
+     if (compressaudio)
+     {
+         moredata.audio_fourcc = FOURCC_LAME;
+@@ -2163,6 +2186,7 @@ void NuppelVideoRecorder::WriteHeader(void)
+         moredata.audio_quality = mp3quality;
+     }
+     else
++#endif
+     {
+         moredata.audio_fourcc = FOURCC_RAWA;
+     }
+@@ -3149,6 +3173,7 @@ void NuppelVideoRecorder::WriteAudio(unsigned char *buf, int fnum, int timecode)
+         }
+     }
  
- # Input
- HEADERS += constants.h
-@@ -26,7 +26,7 @@ HEADERS += decoder.h flacencoder.h mainvisual.h
- HEADERS += metadata.h playlist.h polygon.h
- HEADERS += streaminput.h synaesthesia.h encoder.h visualize.h avfdecoder.h
- HEADERS += vorbisencoder.h polygon.h
--HEADERS += bumpscope.h lameencoder.h dbcheck.h
-+HEADERS += bumpscope.h dbcheck.h
- HEADERS += importmusic.h
- HEADERS += metaio.h metaiotaglib.h
- HEADERS += metaioflacvorbis.h metaioavfcomment.h metaiomp4.h
-@@ -47,7 +47,7 @@ SOURCES += decoder.cpp
- SOURCES += flacencoder.cpp main.cpp
- SOURCES += mainvisual.cpp metadata.cpp playlist.cpp
- SOURCES += streaminput.cpp encoder.cpp dbcheck.cpp
--SOURCES += synaesthesia.cpp lameencoder.cpp
-+SOURCES += synaesthesia.cpp
- SOURCES += vorbisencoder.cpp visualize.cpp bumpscope.cpp
- SOURCES += genres.cpp importmusic.cpp
- SOURCES += metaio.cpp metaiotaglib.cpp
-diff --git mythplugins/settings.pro mythplugins/settings.pro
-index 8d0f5aa..25f4483 100644
---- mythplugins/settings.pro
-+++ mythplugins/settings.pro
-@@ -62,7 +62,6 @@ QMAKE_LIBDIR_X11 =
++#ifdef LAME
+     if (compressaudio)
+     {
+         char mp3gapless[7200];
+@@ -3209,6 +3234,7 @@ void NuppelVideoRecorder::WriteAudio(unsigned char *buf, int fnum, int timecode)
+         audiobytes += audio_buffer_size;
+     }
+     else
++#endif
+     {
+         frameheader.comptype = '0'; // uncompressed audio
+         frameheader.packetlength = audio_buffer_size;
+diff --git mythtv/libs/libmythtv/NuppelVideoRecorder.h mythtv/libs/libmythtv/NuppelVideoRecorder.h
+index 33cc2a7..fb54dd8 100644
+--- mythtv/libs/libmythtv/NuppelVideoRecorder.h
++++ mythtv/libs/libmythtv/NuppelVideoRecorder.h
+@@ -6,6 +6,8 @@
  
- EXTRA_LIBS += $$EXTRALIBS
- EXTRA_LIBS += $$FREETYPE_LIBS
--EXTRA_LIBS += -lmp3lame
- EXTRA_LIBS += $$CONFIG_AUDIO_ALSA_LIBS
- EXTRA_LIBS += $$CONFIG_AUDIO_JACK_LIBS
- EXTRA_LIBS += $$CONFIG_FIREWIRE_LIBS
+ #include <sys/time.h>
+ #include <time.h>
++
++#ifdef LAME
+ #ifdef MMX
+ #undef MMX
+ #define MMXBLAH
+@@ -14,6 +16,7 @@
+ #ifdef MMXBLAH
+ #define MMX
+ #endif
++#endif
+ 
+ #undef HAVE_AV_CONFIG_H
+ extern "C" {
+@@ -181,10 +184,12 @@ class MTV_PUBLIC NuppelVideoRecorder : public V4LRecorder, public CC608Input
+ 
+     bool transcoding;
+ 
++#ifdef LAME
+     int mp3quality;
+     char *mp3buf;
+     int mp3buf_size;
+     lame_global_flags *gf;
++#endif
+ 
+     RTjpeg *rtjc;
+ 
+diff --git mythtv/libs/libmythtv/libmythtv.pro mythtv/libs/libmythtv/libmythtv.pro
+index c815431..ee43f1e 100644
+--- mythtv/libs/libmythtv/libmythtv.pro
++++ mythtv/libs/libmythtv/libmythtv.pro
+@@ -664,6 +664,12 @@ using_backend {
+         DEFINES += USING_ASI
+     }
+ 
++    # LAME MP3 Compression enabled
++    using_lame {
++        DEFINES += LAME
++        LIBS += -lmp3lame
++    }
++
+     DEFINES += USING_BACKEND
+ }
+ 
+@@ -708,7 +714,6 @@ LIBS += -lmythservicecontracts-$$LIBVERSION
+ using_mheg: LIBS += -L../libmythfreemheg -lmythfreemheg-$$LIBVERSION
+ using_live: LIBS += -L../libmythlivemedia -lmythlivemedia-$$LIBVERSION
+ using_hdhomerun: LIBS += -L../libmythhdhomerun -lmythhdhomerun-$$LIBVERSION
+-using_backend: LIBS += -lmp3lame
+ LIBS += $$EXTRA_LIBS $$QMAKE_LIBS_DYNLOAD
+ 
+ POST_TARGETDEPS += ../libmyth/libmyth-$${MYTH_SHLIB_EXT}
+diff --git mythtv/libs/libmythtv/recordingprofile.cpp mythtv/libs/libmythtv/recordingprofile.cpp
+index baa73ab..332d261 100644
+--- mythtv/libs/libmythtv/recordingprofile.cpp
++++ mythtv/libs/libmythtv/recordingprofile.cpp
+@@ -79,6 +79,7 @@ class AudioCodecName: public ComboBoxSetting, public RecordingProfileStorage
+     }
+ };
+ 
++#ifdef LAME
+ class MP3Quality : public SliderSetting, public CodecParamStorage
+ {
+   public:
+@@ -93,6 +94,7 @@ class MP3Quality : public SliderSetting, public CodecParamStorage
+                     "numbers) requires more CPU."));
+     };
+ };
++#endif
+ 
+ class BTTVVolume : public SliderSetting, public CodecParamStorage
+ {
+@@ -402,12 +404,16 @@ class AudioCompressionSettings : public TriggeredConfigurationGroup
+         addChild(codecName);
+         setTrigger(codecName);
+ 
+-        ConfigurationGroup* params = new VerticalConfigurationGroup(false);
++        ConfigurationGroup* params;
++
++#ifdef LAME
++        params = new VerticalConfigurationGroup(false);
+         params->setLabel("MP3");
+         params->addChild(new SampleRate(parent));
+         params->addChild(new MP3Quality(parent));
+         params->addChild(new BTTVVolume(parent));
+         addTarget("MP3", params);
++#endif
+ 
+         params = new VerticalConfigurationGroup(false, false, true, true);
+         params->setLabel("MPEG-2 Hardware Encoder");
+@@ -448,13 +454,17 @@ class AudioCompressionSettings : public TriggeredConfigurationGroup
+             else
+             {
+                 // V4L, TRANSCODE (and any undefined types)
++#ifdef LAME
+                 codecName->addSelection("MP3");
++#endif
+                 codecName->addSelection("Uncompressed");
+             }
+         }
+         else
+         {
++#ifdef LAME
+             codecName->addSelection("MP3");
++#endif
+             codecName->addSelection("Uncompressed");
+             codecName->addSelection("MPEG-2 Hardware Encoder");
+         }
+@@ -1489,7 +1499,11 @@ void RecordingProfileEditor::open(int id)
+                 "(:NAME, :VIDEOCODEC, :AUDIOCODEC, :PROFILEGROUP);");
+         query.bindValue(":NAME", profName);
+         query.bindValue(":VIDEOCODEC", "MPEG-4");
++#ifdef LAME
+         query.bindValue(":AUDIOCODEC", "MP3");
++#else
++        query.bindValue(":AUDIOCODEC", "Uncompressed");
++#endif
+         query.bindValue(":PROFILEGROUP", group);
+         if (!query.exec())
+         {
 -- 
-1.7.10
+1.8.1
 

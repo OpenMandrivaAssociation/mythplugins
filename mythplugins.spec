@@ -67,6 +67,7 @@ BuildRequires:	pkgconfig(libvisual-0.4)
 BuildRequires:	pkgconfig(sdl)
 BuildRequires:	pkgconfig(vorbis)
 BuildRequires:	pkgconfig(taglib)
+BuildRequires:	pkgconfig(udev)
 %if %{build_plf}
 BuildRequires:	lame-devel
 BuildRequires:	faad2-devel
