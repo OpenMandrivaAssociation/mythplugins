@@ -10,9 +10,7 @@
 %define rel 2
 
 %if %{fixesdate}
-%define release %{fixesdate}.%{rel}
 %else
-%define release %{rel}
 %endif
 
 #####################
@@ -27,8 +25,8 @@
 
 Summary:	Official MythTV plugins
 Name:		mythplugins
-Version:	0.26.0
-Release:	%{release}%{?extrarelsuffix}
+Version:	0.27.1
+Release:	1
 License:	GPLv2
 Group:		Video
 Url:		http://www.mythtv.org/
@@ -372,4 +370,3 @@ mkdir -p %{buildroot}%{_docdir}/mythtv-plugin-{browser,gallery,game,music,netvis
 %{_datadir}/mythtv/themes/default-wide/mythburn-ui.xml
 %{_datadir}/mythtv/themes/default-wide/mythnative-ui.xml
 %{_datadir}/mythtv/i18n/mytharchive_*.qm
-

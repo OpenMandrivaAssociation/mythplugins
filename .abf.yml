@@ -1,2 +1,4 @@
+removed_sources:
+  mythplugins-0.26.0.tar.bz2: bd5384e7f422f6f81b011089fd419e771e8c79dc
 sources:
-  "mythplugins-0.26.0.tar.bz2": bd5384e7f422f6f81b011089fd419e771e8c79dc
+  mythplugins-0.27.1.tar.bz2: 0152d50d7ba8b855221fee68200a29fec50c3469
