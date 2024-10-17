@@ -31,7 +31,7 @@ Version:	0.26.0
 Release:	%{release}%{?extrarelsuffix}
 License:	GPLv2
 Group:		Video
-Url:		http://www.mythtv.org/
+Url:		https://www.mythtv.org/
 Source0:	ftp://ftp.osuosl.org/pub/mythtv/%{name}-%{version}.tar.bz2
 Source100:	mythplugins.rpmlintrc
 %if %{fixesdate}
