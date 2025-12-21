@@ -40,6 +40,11 @@ Patch1:		fixes-%{gitversion}.patch
 Patch100:	0100-lame-Allow-building-without-lame-libraries.patch
 
 # (cg) Ditto for the perl-DateTime-Format-ISO pkg
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	perl(Class::Factory::Util)
 BuildRequires:	perl-XML-XPath
 BuildRequires:	perl-Image-Size
